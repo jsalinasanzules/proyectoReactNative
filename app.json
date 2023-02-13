@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Pedidos Vendedores",
+    "slug": "cotzul-pedidos-vendedores",
+    "version": "1.0.1",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "jsEngine": "hermes",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.pedroduran25.apppedidosvendedores"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "package": "com.pedroduran25.apppedidosvendedores"
+    },
+    "web": {
+      "favicon": "./assets/icon.png"
+    },
+    "description": "",
+    "extra": {
+      "eas": {
+        "expo-projects": "1e4ddc71-1836-489c-8220-0d636ea5e42b",
+        "projectId": "63acc35f-11b0-4583-9a71-bca1adef0651"
+      }
+    }
+  }
+}
