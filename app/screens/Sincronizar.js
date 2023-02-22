@@ -125,8 +125,6 @@ export default function Sincronizar(props) {
         listarPedidos();
     },[dataUser]);*/
 
-
-
   const sincronizarDatos = async () => {
     try {
       setLoading(true);
@@ -155,22 +153,7 @@ export default function Sincronizar(props) {
       </View>
 
       <View style={{ alignItems: "center" }}>
-     
-
-        {loading ? (
-          <View style={{ marginHorizontal: 20, marginTop: 10, height: 200 }}>
-            <Text style={styles.titlesSubtitle}>cargando...</Text>
-            <ActivityIndicator size="large" color="purple" />
-            <CargarInformacion terminarLoader={terminarLoader}/>
-          </View>
-        ) : (
-            <Button
-            title="Sincronizar"
-            containerStyle={styles.btnContainerLogin}
-            buttonStyle={styles.btnLogin}
-            onPress={sincronizarDatos}          
-          />
-        )}
+        <CargarInformacion />
       </View>
     </ScrollView>
   );
