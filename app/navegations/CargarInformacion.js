@@ -106,7 +106,7 @@ export default function CargarInformacion() {
 
   useEffect(() => {
     obtenerFechaActualizacionVisualizer();
-
+    
     if (actParametros == 0) {
       tblparametros(1);
       obtenerFechaActualizacion();
@@ -135,13 +135,14 @@ export default function CargarInformacion() {
   }, [actfechaAPI]);
 
   useEffect(() => {
+    console.log("validaciones:"+fechaUltimaActualizacion);
     if (actValidacionFechas == 1) {
-      if (fechaUltimaActualizacionAPI === "") {
+      if (fechaUltimaActualizacionAPI == "") {
         console.log("ERROR AL CONECTARSE AL WS");
       } else if (fechaUltimaActualizacion >= fechaUltimaActualizacionAPI) {
         console.log("NO ACTUALIZA");
       } else if (
-        fechaUltimaActualizacion === "" ||
+        fechaUltimaActualizacion == "" ||
         fechaUltimaActualizacion < fechaUltimaActualizacionAPI
       ) {
         setActualizaTablas(true);
@@ -157,6 +158,10 @@ export default function CargarInformacion() {
       actualizarTablas();
     }
   }, [actualizaTablas]);
+
+  useEffect(() => {
+    obtenerFechaActualizacionVisualizer();
+  }, []);
 
   const sincronizarDatos = async () => {
     try {
@@ -203,14 +208,14 @@ export default function CargarInformacion() {
       tx.executeSql(
         "SELECT pa_valor, pa_codigo FROM parametros where pa_codigo = ? order by pa_valor desc limit 1",
         ["ACTFECHA"],
-        (tx, results) => {
+        (tx, results) => { 
           var len = results.rows.length;
           if (len > 0) {
             for (let i = 0; i < len; i++) {
               let row = results.rows.item(i);
               setFechaUltimaActualizacion(row.pa_valor);
               console.log(
-                "fechaUltimaActualizacion :::" + fechaUltimaActualizacion
+                "fechaUltimaActualizacionVisualizer :::" + fechaUltimaActualizacion
               );
             }
           } else {
@@ -229,11 +234,11 @@ export default function CargarInformacion() {
       database_size
     );
 
-    console.log("PARAMETROS Registro de Datos Paramtros ... ");
+    console.log("PARAMETROS Registro de Datos Parametros ... ");
 
     var cont = 0;
     db.transaction((txn) => {
-      //txn.executeSql("DROP TABLE IF EXISTS parametros");
+      txn.executeSql("DROP TABLE IF EXISTS parametros");
       txn.executeSql(
         "CREATE TABLE IF NOT EXISTS parametros(pa_codigo VARCHAR(20) , pa_valor VARCHAR(50));"
       );
@@ -300,9 +305,9 @@ export default function CargarInformacion() {
       //const jsonResponseAPIFecha = await responseFechaAPI.json();
 
       const jsonResponseAPIFecha = {
-        fecha: [{ fechaUltimaActualizacion: "22-02-2023 22:50:44" }],
+        fecha: [{ fechaUltimaActualizacion: "23-02-2023 22:50:44" }],
       };
-
+ 
       jsonResponseAPIFecha?.fecha.map((value, index) => {
         setFechaUltimaActualizacionAPI(value.fechaUltimaActualizacion);
         //setFechaUltimaActualizacionAPI("");
@@ -316,6 +321,7 @@ export default function CargarInformacion() {
     }
 
     setActValidacionFechas(1);
+    console.log("validaciones:"+fechaUltimaActualizacion);
     if (actValidacionFechas == 1) {
       if (fechaUltimaActualizacionAPI === "") {
         setActualizaFecha(false);
@@ -324,7 +330,7 @@ export default function CargarInformacion() {
         setActualizaFecha(true);
         console.log("NO ACTUALIZA");
       } else if (
-        fechaUltimaActualizacion === "" ||
+        fechaUltimaActualizacion == "" ||
         fechaUltimaActualizacion < fechaUltimaActualizacionAPI
       ) {
         //setActualizaTablas(true); //Aquí actualiza los datos de las tablas
@@ -899,7 +905,7 @@ export default function CargarInformacion() {
         var len = results.rows.length;
         for (let i = 0; i < len; i++) {
           let row = results.rows.item(i);
-          //console.log(`ITEMS: ` + JSON.stringify(row));
+          console.log(`ITEMS: ` + JSON.stringify(row));
         }
         setTerminaItem(true);
         terminarProceso();
@@ -945,7 +951,7 @@ export default function CargarInformacion() {
           ", dp_gngastos VARCHAR(50), item VARCHAR(500) " +
           " );"
       );
-console.log("NNNNNNN");
+ 
       myResponse?.pedido.map((value, index) => {
         txn.executeSql(
           "INSERT INTO datospedidos(dp_codigo , dp_codvendedor , dp_codcliente " +
@@ -953,12 +959,16 @@ console.log("NNNNNNN");
             ", dp_seguro , dp_iva , dp_total  " +
             ", dp_estatus , dp_codpedven , dp_numpedido  " +
             ", dp_idvendedor , dp_fecha , dp_empresa  " +
-            /*", dp_prioridad , dp_observacion , dp_idcliente  " +
-            ", dp_tipodoc , dp_tipodesc ,dp_porcdesc dp_valordesc  " +
-            ", dp_ttrans , dp_gnorden , dp_gnventas  " +
-            ", dp_gngastos, item "+*/
+            ", dp_prioridad , dp_observacion , dp_idcliente  " +
+            ", dp_tipodoc , dp_tipodesc ,dp_porcdesc  " +
+            ", dp_valordesc , dp_ttrans , dp_gnorden   " +
+            ", dp_gnventas, dp_gngastos, item "+
             ") " +
             " VALUES (?, ?, ? " +
+            ", ?, ? , ? " +
+            ", ?, ? , ? " +
+            ", ?, ? , ? " +
+            ", ?, ? , ? " +
             ", ?, ? , ? " +
             ", ?, ? , ? " +
             ", ?, ? , ? " +
@@ -968,31 +978,38 @@ console.log("NNNNNNN");
             value.dp_codigo,
             value.dp_codvendedor,
             value.dp_codcliente,
+
             value.dp_subtotal,
             value.dp_descuento,
             value.dp_transporte,
-            /*value.dp_seguro,
 
+            value.dp_seguro,
             value.dp_iva,
             value.dp_total,
+
             value.dp_estatus,
             value.dp_codpedven,
             value.dp_numpedido,
+
             value.dp_idvendedor,
             value.dp_fecha,
             value.dp_empresa,
+
             value.dp_prioridad,
             value.dp_observacion,
             value.dp_idcliente,
+            
             value.dp_tipodoc,
             value.dp_tipodesc,
             value.dp_porcdesc,
+            
             value.dp_valordesc,
             value.dp_ttrans,
             value.dp_gnorden,
+            
             value.dp_gnventas,
             value.dp_gngastos,
-            JSON.stringify(value.item),*/
+            JSON.stringify(value.item),
           ],
           (txn, results) => {
             if (results.rowsAffected > 0) {
@@ -1019,7 +1036,7 @@ console.log("NNNNNNN");
         var len = results.rows.length;
         for (let i = 0; i < len; i++) {
           let row = results.rows.item(i);
-          console.log(`DATOS PEDIDOS: ` + JSON.stringify(row));
+          //console.log(`DATOS PEDIDOS: ` + JSON.stringify(row));
         }
         setTerminaDatosPedido(true);
         terminarProceso();

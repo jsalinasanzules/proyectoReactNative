@@ -44,7 +44,7 @@ class ModalItems extends Component {
   };
 
   componentDidUpdate() {
-    console.log("nuevo texto: AAAA" + this.state.search);
+    console.log("nuevo texto:" + this.state.search);
     //this.getClientes();
   }
 

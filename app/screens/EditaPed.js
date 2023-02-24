@@ -21,6 +21,7 @@ import ModalItems from "./ModalItems";
 import { RadioButton } from "react-native-paper";
 import { Button } from "react-native-elements";
 import { FlatList } from "react-native-gesture-handler";
+import * as SQLite from "expo-sqlite";
 
 /**
  * @author Pedro Durán A.
@@ -176,7 +177,7 @@ export default function EditaPed(props) {
               {item.it_referencia + "-" + item.it_descripcion}
             </Text>
           </View>
-          <View
+           <View
             style={{
               width: 70,
               height: 30,
@@ -380,7 +381,7 @@ export default function EditaPed(props) {
                 iconStyle={styles.iconRight}
               />
             </Text>
-          </View>
+          </View> 
         </View>
       </View>
     );
@@ -475,10 +476,11 @@ export default function EditaPed(props) {
       resindex = 0;
       console.log("dataitem. " + JSON.stringify(dataitem));
       console.log("newitem. " + JSON.stringify(newitem));
-      setDataItem(dataitem.concat(newitem));
-      //console.log("dataitem. " + JSON.stringify(dataitem));
+      dataitem.push(newitem);
+      //setDataItem(dataitem.concat(newitem));
+      console.log("dataitem. " + JSON.stringify(dataitem));
 
-      agregaResultados(
+      /*agregaResultados(
         newitem.it_codprod,
         0,
         0,
@@ -490,7 +492,7 @@ export default function EditaPed(props) {
         0,
         0,
         "-"
-      );
+      );*/
       resindex = valindex + 1;
       setValIndex(resindex);
       setLoading(true);
@@ -1300,8 +1302,6 @@ export default function EditaPed(props) {
 
   const cargarPedido = async () => {
     try {
-
-      console.log("JJJJJJJJJJJJJ");
       /*const response = await fetch(
         "https://app.cotzul.com/Pedidos/getDatosPedido.php?idpedido=" + idpedido
       );*/
@@ -1317,34 +1317,33 @@ export default function EditaPed(props) {
           var len = results.rows.length;
           for (let i = 0; i < len; i++) {
             let row = results.rows.item(i);
-            
           }
           registrarPlazo(results.rows._array);
-          console.log("JSA: "+JSON.stringify(results));
+          console.log("JSA: " + JSON.stringify(results.rows._array));
+          const jsonResponse = results.rows._array;
+
+          console.log("OBTENIENDO PEDIDO");
+          setPedido(jsonResponse);
+          setItemPedido(jsonResponse[0].item);
+          setObs(jsonResponse[0].dp_observacion);
+
+          setIdCliente(jsonResponse[0].dp_codcliente);
+          setChecked(jsonResponse[0].dp_tipodesc == 0 ? "first" : "second");
+          setPorcent(jsonResponse[0].dp_porcdesc);
+          setIdTrans(jsonResponse[0].dp_ttrans);
+          setSubtotal(Number(jsonResponse[0].dp_subtotal));
+          setDescuento(Number(jsonResponse[0].dp_descuento));
+          setSeguro(Number(jsonResponse[0].dp_seguro));
+          setIva(Number(jsonResponse[0].dp_iva));
+          setTransporte(Number(jsonResponse[0].dp_transporte));
+          setTotal(Number(jsonResponse[0].dp_total));
+          setGnGastos(Number(jsonResponse[0].dp_gngastos));
+          cargarFormaPago(jsonResponse[0].dp_tipodoc);
+
+          //console.log("JSA ITEMS:"+jsonResponse[0].item);
+          cargarListaItems(JSON.parse(jsonResponse[0].item));
         });
       });
-
-      
-      const jsonResponse = await response.json();
-      console.log("OBTENIENDO PEDIDO");
-      console.log(jsonResponse?.pedido);
-      setPedido(jsonResponse?.pedido);
-      setItemPedido(jsonResponse?.pedido[0].item);
-      setObs(jsonResponse?.pedido[0].dp_observacion);
-      setIdCliente(jsonResponse?.pedido[0].dp_codcliente);
-      setChecked(jsonResponse?.pedido[0].dp_tipodesc == 0 ? "first" : "second");
-      setPorcent(jsonResponse?.pedido[0].dp_porcdesc);
-      setIdTrans(jsonResponse?.pedido[0].dp_ttrans);
-      setSubtotal(Number(jsonResponse?.pedido[0].dp_subtotal));
-      setDescuento(Number(jsonResponse?.pedido[0].dp_descuento));
-      setSeguro(Number(jsonResponse?.pedido[0].dp_seguro));
-      setIva(Number(jsonResponse?.pedido[0].dp_iva));
-      setTransporte(Number(jsonResponse?.pedido[0].dp_transporte));
-      setTotal(Number(jsonResponse?.pedido[0].dp_total));
-      setGnGastos(Number(jsonResponse?.pedido[0].dp_gngastos));
-      cargarFormaPago(jsonResponse?.pedido[0].dp_tipodoc);
-
-      cargarListaItems(jsonResponse?.pedido[0].item);
     } catch (error) {
       console.log("un error cachado obtener pedidos");
       console.log(error);
@@ -1353,6 +1352,12 @@ export default function EditaPed(props) {
 
   const cargarListaItems = (itemes) => {
     for (let i = 0; i < itemes.length; i++) {
+      /*console.log("CHARGE ITEM LIST:"+itemes[i].it_codprod+","+
+        itemes[i].it_cantidad+","+
+        itemes[i].it_descuento+","+
+        0+","+
+        itemes[i].it_precio);*/
+
       cargarItemElegido(
         itemes[i].it_codprod,
         itemes[i].it_cantidad,
@@ -1391,6 +1396,45 @@ export default function EditaPed(props) {
     editable
   ) => {
     try {
+      db = SQLite.openDatabase(
+        database_name,
+        database_version,
+        database_displayname,
+        database_size
+      );
+      db.transaction((tx) => {
+        console.log("item to search:"+codprod);
+        tx.executeSql(
+          "SELECT * FROM items where it_codprod = ?  ",
+          [codprod],
+          (tx, results) => {
+            var len = results.rows.length;
+            for (let i = 0; i < len; i++) {
+              let row = results.rows.item(i);
+              console.log("OBTENIENDO itemes");
+              console.log(row);
+              actualizaItem(row);
+              EditarResultados(
+                row.it_codprod,
+                cantidad,
+                descuento,
+                row.it_precio,
+                row.it_pvp,
+                row.it_preciosub,
+                row.it_contado,
+                Number(preciosel),
+                Number(editable),
+                row.it_costoprom,
+                row.it_peso,
+                row.it_referencia +
+                  "-" +
+                  row.it_descripcion
+              );
+            }
+          }
+        );
+      });
+/*
       const response = await fetch(
         "https://app.cotzul.com/Pedidos/getItemElegido.php?iditem=" + codprod
       );
@@ -1401,7 +1445,10 @@ export default function EditaPed(props) {
       const jsonResponse = await response.json();
       console.log("OBTENIENDO itemes");
       console.log(jsonResponse?.item);
-      actualizaItem(jsonResponse?.item[0]);
+*/
+
+
+      /*actualizaItem(jsonResponse?.item[0]);
       EditarResultados(
         jsonResponse?.item[0].it_codprod,
         cantidad,
@@ -1417,7 +1464,7 @@ export default function EditaPed(props) {
         jsonResponse?.item[0].it_referencia +
           "-" +
           jsonResponse?.item[0].it_descripcion
-      );
+      );*/
     } catch (error) {
       console.log(error);
     }
