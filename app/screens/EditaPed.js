@@ -238,8 +238,8 @@ export default function EditaPed(props) {
                 )
               }
             />
-          </View>
-          <View
+          </View> 
+          {/* <View
             style={{
               width: 150,
               height: 30,
@@ -381,7 +381,7 @@ export default function EditaPed(props) {
                 iconStyle={styles.iconRight}
               />
             </Text>
-          </View> 
+          </View>  */}
         </View>
       </View>
     );
@@ -435,7 +435,7 @@ export default function EditaPed(props) {
     }
   };
 
-  console.log(dataUser);
+  //console.log(dataUser);
 
   const getCurrentDate = () => {
     var date = new Date().getDate();
@@ -480,7 +480,7 @@ export default function EditaPed(props) {
       //setDataItem(dataitem.concat(newitem));
       console.log("dataitem. " + JSON.stringify(dataitem));
 
-      /*agregaResultados(
+      agregaResultados(
         newitem.it_codprod,
         0,
         0,
@@ -492,7 +492,7 @@ export default function EditaPed(props) {
         0,
         0,
         "-"
-      );*/
+      );
       resindex = valindex + 1;
       setValIndex(resindex);
       setLoading(true);
@@ -503,6 +503,7 @@ export default function EditaPed(props) {
 
   const noElementoSimilar = (codigo) => {
     var variable = true;
+    console.log("LENGTH 1");
     for (let i = 0; i < itemtotal.length; i++) {
       if (itemtotal[i].codprod == codigo) variable = false;
     }
@@ -517,6 +518,8 @@ export default function EditaPed(props) {
 
   const eliminardeArray = (codigo) => {
     var vindex = 0;
+    console.log("LENGTH 2");
+
     for (let i = 0; i < itemtotal.length; i++) {
       if (itemtotal[i].codprod == codigo) vindex = i;
     }
@@ -528,19 +531,25 @@ export default function EditaPed(props) {
 
   const registrarPlazo = (dataPlazo) => {
     var temp = [];
-    for (let i = 0; i < dataPlazo.length; ++i) {
-      temp.push({
-        label: dataPlazo[i].pl_descripcion,
-        value: Number(dataPlazo[i].pl_codigo),
-      });
+    console.log("LENGTH 3");
+    if (dataPlazo != null) {
+      for (let i = 0; i < dataPlazo.length; ++i) {
+        temp.push({
+          label: dataPlazo[i].pl_descripcion,
+          value: Number(dataPlazo[i].pl_codigo),
+        });
+      }
+      //console.log("se encontro plazo: " + JSON.stringify(temp));
+      setPlazo(temp);
+      setRegplazo(1);
     }
-    console.log("se encontro plazo: " + JSON.stringify(temp));
-    setPlazo(temp);
-    setRegplazo(1);
+    console.log("FIN LENGTH 3");
   };
 
   const registrarVendedores = (dataVend) => {
     var temp = [];
+    console.log("LENGTH 4");
+
     for (let i = 0; i < dataVend.length; ++i) {
       temp.push({
         label: dataVend[i].vd_vendedor,
@@ -553,16 +562,18 @@ export default function EditaPed(props) {
 
   const registrarTransporte = (dataTransporte) => {
     var temp = [];
-
-    for (let i = 0; i < dataTransporte.length; ++i) {
-      if (dataTransporte[i].pl_codigo != idtrans)
-        temp.push({
-          label: dataTransporte[i].pl_nombre,
-          value: dataTransporte[i].pl_codigo,
-        });
-      else setNomTrans(dataTransporte[i].pl_nombre);
+    console.log("LENGTH 5");
+    if (dataTransporte != null) {
+      for (let i = 0; i < dataTransporte.length; ++i) {
+        if (dataTransporte[i].pl_codigo != idtrans)
+          temp.push({
+            label: dataTransporte[i].pl_nombre,
+            value: dataTransporte[i].pl_codigo,
+          });
+        else setNomTrans(dataTransporte[i].pl_nombre);
+      }
+      setTransp(temp);
     }
-    setTransp(temp);
   };
 
   const agregaResultados = (
@@ -578,9 +589,10 @@ export default function EditaPed(props) {
     peso,
     descripcion
   ) => {
-    console.log("INGRESO agregaResultados");
     var temp = [];
     var gngastosv = 0;
+    console.log("LENGTH 6");
+
     for (let i = 0; i < itemtotal.length; ++i) {
       gngastosv = Number(itemtotal[i].costo) / Number(itemtotal[i].subtotal);
       temp.push({
@@ -602,10 +614,32 @@ export default function EditaPed(props) {
       });
     }
 
+    console.log("INGRESO agregaResultadosNEXT:" + editable);
     var ressub = 0,
       restot = 0;
     ressub = Number(cant) * Number(precio);
     restot = ressub - (ressub * desc) / 100;
+
+    console.log(
+      "INGRESO agregaResultadosNEXT" +
+        JSON.stringify({
+          codprod: codprod,
+          descripcion: descripcion,
+          cantidad: cant,
+          precio: precio,
+          pvp: pvp,
+          subdist: subdist,
+          contado: contado,
+          preciosel: precio,
+          editable: editable,
+          costo: costo,
+          descuento: desc,
+          subtotal: ressub,
+          total: restot,
+          peso: peso,
+          gngastos: 0,
+        })
+    );
 
     temp.push({
       codprod: codprod,
@@ -624,8 +658,10 @@ export default function EditaPed(props) {
       peso: peso,
       gngastos: 0,
     });
-    setItemTotal(temp);
-    console.log("valor del itemtotal: " + editable);
+    //console.log("TEMP TOTAL:"+JSON.stringify(temp));
+    itemtotal.push(temp[0]);
+    //setItemTotal(temp);
+    //console.log("ITEM TOTAL:"+JSON.stringify(itemtotal));
   };
 
   const CargarResultados = () => {
@@ -647,6 +683,7 @@ export default function EditaPed(props) {
     itemtext = "";
     var cadenita1 = "";
     var gngastosv = 0;
+    console.log("LENGTH 7");
 
     for (let i = 0; i < itemtotal.length; i++) {
       numcod++;
@@ -807,6 +844,7 @@ export default function EditaPed(props) {
     var varsubtotalcosto = 0;
     itemtext = "";
     var gngastosv = 0;
+    console.log("LENGTH 8");
 
     for (let i = 0; i < itemtotal.length; i++) {
       numcod++;
@@ -1046,12 +1084,16 @@ export default function EditaPed(props) {
     var cadenita1 = "";
     var rescosto = 0;
     var varsubtotalcosto = 0;
-    itemtext = "";
+    var itemtext = "";
     var gngastosv = 0;
 
+    console.log("EDITAR RESULTADOS");
+
     for (let i = 0; i < itemtotal.length; i++) {
+      console.log("CODPROD:" + codprod);
       numcod++;
       if (itemtotal[i].codprod == codprod) {
+        console.log("IF");
         var ressub = 0,
           restot = 0;
         ressub = Number(cant) * Number(preciosel);
@@ -1120,6 +1162,8 @@ export default function EditaPed(props) {
           ";" +
           restot;
       } else {
+        console.log("ELSE:" + i);
+        console.log(JSON.stringify(itemtotal));
         temp.push({
           codprod: itemtotal[i].codprod,
           descripcion: itemtotal[i].descripcion,
@@ -1187,14 +1231,16 @@ export default function EditaPed(props) {
       console.log("Val del peso: " + valpeso);
     }
 
+    setCadenaint(null);
     setCadenaint(itemtext);
+    setCadenita(null);
     setCadenita(cadenita1);
-
+    setItemTotal(null);
     setItemTotal(temp);
+    setSubtotal(null);
     setSubtotal(varsubtotal);
-
+    setKilos(null);
     setKilos(totpeso);
-
     cargarTarifas(tcodigo, ttrans);
 
     if (checked == "second") {
@@ -1280,6 +1326,7 @@ export default function EditaPed(props) {
         database_size
       );
       db.transaction((tx) => {
+        console.log("LENGTH 9");
         tx.executeSql("SELECT * FROM plazos ", [], (tx, results) => {
           var len = results.rows.length;
           for (let i = 0; i < len; i++) {
@@ -1313,36 +1360,44 @@ export default function EditaPed(props) {
         database_size
       );
       db.transaction((tx) => {
-        tx.executeSql("SELECT * FROM datospedidos  ", [], (tx, results) => {
-          var len = results.rows.length;
-          for (let i = 0; i < len; i++) {
-            let row = results.rows.item(i);
+        console.log("PEDIDO:" + idpedido);
+        tx.executeSql(
+          "SELECT * FROM datospedidos where dp_codigo = ? ",
+          ["" + idpedido],
+          (tx, results) => {
+            console.log("LENGTH 10");
+            var len = results ? results.rows.length : 0;
+            for (let i = 0; i < len; i++) {
+              let row = results.rows.item(i);
+            }
+            if (len > 0) {
+              registrarPlazo(results.rows._array);
+              console.log("JSA: " + JSON.stringify(results.rows._array));
+              const jsonResponse = results.rows._array;
+
+              console.log("OBTENIENDO PEDIDO");
+              setPedido(jsonResponse);
+              setItemPedido(jsonResponse[0].item);
+              setObs(jsonResponse[0].dp_observacion);
+
+              setIdCliente(jsonResponse[0].dp_codcliente);
+              setChecked(jsonResponse[0].dp_tipodesc == 0 ? "first" : "second");
+              setPorcent(jsonResponse[0].dp_porcdesc);
+              setIdTrans(jsonResponse[0].dp_ttrans);
+              setSubtotal(Number(jsonResponse[0].dp_subtotal));
+              setDescuento(Number(jsonResponse[0].dp_descuento));
+              setSeguro(Number(jsonResponse[0].dp_seguro));
+              setIva(Number(jsonResponse[0].dp_iva));
+              setTransporte(Number(jsonResponse[0].dp_transporte));
+              setTotal(Number(jsonResponse[0].dp_total));
+              setGnGastos(Number(jsonResponse[0].dp_gngastos));
+              cargarFormaPago(jsonResponse[0].dp_tipodoc);
+
+              //console.log("JSA ITEMS:"+jsonResponse[0].item);
+              cargarListaItems(JSON.parse(jsonResponse[0].item));
+            }
           }
-          registrarPlazo(results.rows._array);
-          console.log("JSA: " + JSON.stringify(results.rows._array));
-          const jsonResponse = results.rows._array;
-
-          console.log("OBTENIENDO PEDIDO");
-          setPedido(jsonResponse);
-          setItemPedido(jsonResponse[0].item);
-          setObs(jsonResponse[0].dp_observacion);
-
-          setIdCliente(jsonResponse[0].dp_codcliente);
-          setChecked(jsonResponse[0].dp_tipodesc == 0 ? "first" : "second");
-          setPorcent(jsonResponse[0].dp_porcdesc);
-          setIdTrans(jsonResponse[0].dp_ttrans);
-          setSubtotal(Number(jsonResponse[0].dp_subtotal));
-          setDescuento(Number(jsonResponse[0].dp_descuento));
-          setSeguro(Number(jsonResponse[0].dp_seguro));
-          setIva(Number(jsonResponse[0].dp_iva));
-          setTransporte(Number(jsonResponse[0].dp_transporte));
-          setTotal(Number(jsonResponse[0].dp_total));
-          setGnGastos(Number(jsonResponse[0].dp_gngastos));
-          cargarFormaPago(jsonResponse[0].dp_tipodoc);
-
-          //console.log("JSA ITEMS:"+jsonResponse[0].item);
-          cargarListaItems(JSON.parse(jsonResponse[0].item));
-        });
+        );
       });
     } catch (error) {
       console.log("un error cachado obtener pedidos");
@@ -1351,6 +1406,7 @@ export default function EditaPed(props) {
   };
 
   const cargarListaItems = (itemes) => {
+    console.log("LENGTH 11");
     for (let i = 0; i < itemes.length; i++) {
       /*console.log("CHARGE ITEM LIST:"+itemes[i].it_codprod+","+
         itemes[i].it_cantidad+","+
@@ -1403,7 +1459,8 @@ export default function EditaPed(props) {
         database_size
       );
       db.transaction((tx) => {
-        console.log("item to search:"+codprod);
+        console.log("item to search:" + codprod);
+        console.log("LENGTH 12");
         tx.executeSql(
           "SELECT * FROM items where it_codprod = ?  ",
           [codprod],
@@ -1412,8 +1469,37 @@ export default function EditaPed(props) {
             for (let i = 0; i < len; i++) {
               let row = results.rows.item(i);
               console.log("OBTENIENDO itemes");
-              console.log(row);
+              //console.log(cantidad+"/"+row);
               actualizaItem(row);
+              console.log(
+                "JSA DATA EDITAR:" +
+                  row.it_codprod +
+                  "," +
+                  cantidad +
+                  "," +
+                  descuento +
+                  "," +
+                  row.it_precio +
+                  "," +
+                  row.it_pvp +
+                  "," +
+                  row.it_preciosub +
+                  "," +
+                  row.it_contado +
+                  "," +
+                  Number(preciosel) +
+                  ",editable:" +
+                  Number(editable) +
+                  ",costprom:" +
+                  row.it_costoprom +
+                  "," +
+                  row.it_peso +
+                  "," +
+                  row.it_referencia +
+                  "-" +
+                  row.it_descripcion
+              );
+
               EditarResultados(
                 row.it_codprod,
                 cantidad,
@@ -1426,15 +1512,13 @@ export default function EditaPed(props) {
                 Number(editable),
                 row.it_costoprom,
                 row.it_peso,
-                row.it_referencia +
-                  "-" +
-                  row.it_descripcion
+                row.it_referencia + "-" + row.it_descripcion
               );
             }
           }
         );
       });
-/*
+      /*
       const response = await fetch(
         "https://app.cotzul.com/Pedidos/getItemElegido.php?iditem=" + codprod
       );
@@ -1446,7 +1530,6 @@ export default function EditaPed(props) {
       console.log("OBTENIENDO itemes");
       console.log(jsonResponse?.item);
 */
-
 
       /*actualizaItem(jsonResponse?.item[0]);
       EditarResultados(
@@ -1466,7 +1549,7 @@ export default function EditaPed(props) {
           jsonResponse?.item[0].it_descripcion
       );*/
     } catch (error) {
-      console.log(error);
+      console.log("cargarItemElegido" + error);
     }
   };
 
@@ -1574,8 +1657,10 @@ export default function EditaPed(props) {
   }, [idcliente]);
 
   useEffect(() => {
-    if (itemtotal.length > 0) {
-    }
+    console.log("LENGTH 13");
+    //if (itemtotal.length > 0) {
+    //}
+
   }, [itemtotal]);
 
   useEffect(() => {
@@ -1583,6 +1668,7 @@ export default function EditaPed(props) {
   }, [idtrans]);
 
   useEffect(() => {
+    console.log("LENGTH 14");
     if (transp.length > 0) setRegtrans(1);
   }, [transp]);
 
@@ -1748,6 +1834,7 @@ export default function EditaPed(props) {
 
   const GrabarPedido = async () => {
     try {
+      console.log("LENGTH 15");
       if (
         cadenaint != "" &&
         numdoc != 0 &&
@@ -2033,10 +2120,10 @@ export default function EditaPed(props) {
         </View>
         <View style={styles.row}>
           <View style={styles.itemrow}>
-            <Text>{Number(cliente.ct_cupoasignado).toFixed(2)}</Text>
+            <Text>{cliente.ct_cupoasignado!=null?Number(cliente.ct_cupoasignado).toFixed(2):0}</Text>
           </View>
           <View style={styles.itemrow}>
-            <Text>{Number(cliente.ct_cupodisponible).toFixed(2)}</Text>
+            <Text>{cliente.ct_cupodisponible!=null?Number(cliente.ct_cupodisponible).toFixed(2):0}</Text>
           </View>
         </View>
         <View style={styles.row}>
@@ -2304,7 +2391,7 @@ export default function EditaPed(props) {
               <Text style={styles.tittext}>Kilo:</Text>
             </View>
             <View style={styles.itemrow}>
-              <Text style={styles.itemtext}>{kilos.toFixed(2)} kg.</Text>
+              <Text style={styles.itemtext}>{kilos!=null?kilos.toFixed(2):0} kg.</Text>
             </View>
           </View>
           <View style={styles.row}>
@@ -2346,7 +2433,7 @@ export default function EditaPed(props) {
               <Text style={styles.tittext}>Subtotal:</Text>
             </View>
             <View style={styles.itemrow}>
-              <Text style={styles.itemtext}>${subtotal.toFixed(2)}</Text>
+              <Text style={styles.itemtext}>${subtotal!=null?subtotal.toFixed(2):0}</Text>
             </View>
           </View>
           <View style={styles.row}>
@@ -2354,7 +2441,7 @@ export default function EditaPed(props) {
               <Text style={styles.tittext}>Desc.(-):</Text>
             </View>
             <View style={styles.itemrow}>
-              <Text style={styles.itemtext}>${descuento.toFixed(2)}</Text>
+              <Text style={styles.itemtext}>${descuento!=null?descuento.toFixed(2):0}</Text>
             </View>
           </View>
           <View style={styles.row}>
@@ -2362,7 +2449,7 @@ export default function EditaPed(props) {
               <Text style={styles.tittext}>Seguro(+):</Text>
             </View>
             <View style={styles.itemrow}>
-              <Text style={styles.itemtext}>${seguro.toFixed(2)}</Text>
+              <Text style={styles.itemtext}>${seguro!=null?seguro.toFixed(2):0}</Text>
             </View>
           </View>
           <View style={styles.row}>
@@ -2370,7 +2457,7 @@ export default function EditaPed(props) {
               <Text style={styles.tittext}>IVA(+):</Text>
             </View>
             <View style={styles.itemrow}>
-              <Text style={styles.itemtext}>${iva.toFixed(2)}</Text>
+              <Text style={styles.itemtext}>${iva!=null?iva.toFixed(2):0}</Text>
             </View>
           </View>
           <View style={styles.row}>
@@ -2390,7 +2477,7 @@ export default function EditaPed(props) {
                   />
                 </>
               ) : (
-                <Text style={styles.itemtext}>${transporte.toFixed(2)}</Text>
+                <Text style={styles.itemtext}>${transporte!=null?transporte.toFixed(2):0}</Text>
               )}
             </View>
           </View>
@@ -2399,7 +2486,7 @@ export default function EditaPed(props) {
               <Text style={styles.tittext}>Total:</Text>
             </View>
             <View style={styles.itemrow}>
-              <Text style={styles.itemtext}>${total.toFixed(2)}</Text>
+              <Text style={styles.itemtext}>${total!=null?total.toFixed(2):0}</Text>
             </View>
           </View>
         </View>
