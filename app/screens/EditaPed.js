@@ -239,7 +239,7 @@ export default function EditaPed(props) {
               }
             />
           </View> 
-          {/* <View
+           <View
             style={{
               width: 150,
               height: 30,
@@ -261,7 +261,7 @@ export default function EditaPed(props) {
             />
           </View>
 
-          <View
+          {/* <View
             style={{
               width: 70,
               height: 30,
@@ -285,7 +285,7 @@ export default function EditaPed(props) {
                 ).toFixed(2)}
               </Text>
             )}
-          </View>
+          </View> */}
           <View
             style={{
               width: 70,
@@ -301,7 +301,10 @@ export default function EditaPed(props) {
               ).toFixed(2)}
             </Text>
           </View>
-          <View
+
+
+
+          {/*<View
             style={{
               width: 70,
               height: 30,
@@ -336,7 +339,7 @@ export default function EditaPed(props) {
               />
             )}
           </View>
-          <View
+           <View 
             style={{
               width: 70,
               height: 30,
@@ -452,10 +455,12 @@ export default function EditaPed(props) {
     setTcodigo(item.ct_tcodigo);
     cargarTarifas(item.ct_tcodigo, ttrans);
     setUbicacion(item.ct_ubicacion);
-    setNotIdplazo(Number(item.ct_idplazo));
-    console.log(item.ct_plazo);
+
+    setNotIdplazo(item.ct_idplazo);
     setNotnomplazo(item.ct_plazo);
-    cargarPlazo(Number(item.ct_idplazo));
+
+    cargarPlazo(item.ct_idplazo);
+    
   };
 
   const inicializaCliente = () => {
@@ -531,7 +536,7 @@ export default function EditaPed(props) {
 
   const registrarPlazo = (dataPlazo) => {
     var temp = [];
-    console.log("LENGTH 3");
+    console.log("LENGTH 3"+ JSON.stringify(dataPlazo));
     if (dataPlazo != null) {
       for (let i = 0; i < dataPlazo.length; ++i) {
         temp.push({
@@ -539,7 +544,7 @@ export default function EditaPed(props) {
           value: Number(dataPlazo[i].pl_codigo),
         });
       }
-      //console.log("se encontro plazo: " + JSON.stringify(temp));
+      console.log("se encontro plazo: " + JSON.stringify(temp));
       setPlazo(temp);
       setRegplazo(1);
     }
@@ -661,7 +666,7 @@ export default function EditaPed(props) {
     //console.log("TEMP TOTAL:"+JSON.stringify(temp));
     itemtotal.push(temp[0]);
     //setItemTotal(temp);
-    //console.log("ITEM TOTAL:"+JSON.stringify(itemtotal));
+    console.log("ITEM TOTAL:"+JSON.stringify(itemtotal));
   };
 
   const CargarResultados = () => {
@@ -755,7 +760,11 @@ export default function EditaPed(props) {
 
     cargarTarifas(tcodigo, ttrans);
 
-    setItemTotal(temp);
+    itemtotal.push(temp[0]);
+    //setItemTotal(temp);
+    console.log("ITEM TOTAL2:"+JSON.stringify(itemtotal));
+
+    setSubtotal(null);
     setSubtotal(varsubtotal);
     console.log("entro con el valor de transporte: " + ttrans);
     setKilos(totpeso);
@@ -980,10 +989,14 @@ export default function EditaPed(props) {
       }
     }
 
-    setItemTotal(temp);
+    itemtotal.push(temp[0]);
+    //setItemTotal(temp);
+    console.log("ITEM TOTAL3:"+JSON.stringify(itemtotal));
     setCadenaint(itemtext);
     setCadenita(cadenita1);
 
+
+    setSubtotal(null);
     setSubtotal(varsubtotal);
 
     setKilos(totpeso);
@@ -1327,7 +1340,7 @@ export default function EditaPed(props) {
       );
       db.transaction((tx) => {
         console.log("LENGTH 9");
-        tx.executeSql("SELECT * FROM plazos ", [], (tx, results) => {
+        tx.executeSql("SELECT * FROM plazos", [], (tx, results) => {
           var len = results.rows.length;
           for (let i = 0; i < len; i++) {
             let row = results.rows.item(i);
@@ -1371,30 +1384,44 @@ export default function EditaPed(props) {
               let row = results.rows.item(i);
             }
             if (len > 0) {
-              registrarPlazo(results.rows._array);
+              //registrarPlazo(results.rows._array);
               console.log("JSA: " + JSON.stringify(results.rows._array));
               const jsonResponse = results.rows._array;
+              
 
               console.log("OBTENIENDO PEDIDO");
               setPedido(jsonResponse);
+             
               setItemPedido(jsonResponse[0].item);
+              
               setObs(jsonResponse[0].dp_observacion);
+              
 
               setIdCliente(jsonResponse[0].dp_codcliente);
+              console.log("FIN4");
               setChecked(jsonResponse[0].dp_tipodesc == 0 ? "first" : "second");
+              console.log("FIN5");
               setPorcent(jsonResponse[0].dp_porcdesc);
+              console.log("FIN6");
+              console.log("TTRANS:"+Number(jsonResponse[0].dp_ttrans));
+              console.log("FIN62");
               setIdTrans(jsonResponse[0].dp_ttrans);
+              console.log("FIN7");
               setSubtotal(Number(jsonResponse[0].dp_subtotal));
+              console.log("FIN8");
               setDescuento(Number(jsonResponse[0].dp_descuento));
               setSeguro(Number(jsonResponse[0].dp_seguro));
               setIva(Number(jsonResponse[0].dp_iva));
               setTransporte(Number(jsonResponse[0].dp_transporte));
               setTotal(Number(jsonResponse[0].dp_total));
               setGnGastos(Number(jsonResponse[0].dp_gngastos));
+              console.log("FIN");
               cargarFormaPago(jsonResponse[0].dp_tipodoc);
 
               //console.log("JSA ITEMS:"+jsonResponse[0].item);
               cargarListaItems(JSON.parse(jsonResponse[0].item));
+
+              
             }
           }
         );
@@ -1426,19 +1453,41 @@ export default function EditaPed(props) {
 
   const cargarClienteElegido = async () => {
     try {
-      const response = await fetch(
+
+      db = SQLite.openDatabase(
+        database_name,
+        database_version,
+        database_displayname,
+        database_size
+      );
+      db.transaction((tx) => {
+        console.log("CLIENTE jjj:"+idcliente);
+        tx.executeSql(
+          "SELECT * FROM clientes where ct_codigo = ? ",
+          [idcliente],
+          (tx, results) => {
+            console.log("LENGTH 10");
+            var len = results ? results.rows.length : 0;
+            for (let i = 0; i < len; i++) {
+              let row = results.rows.item(i);
+              console.log("CLIENTE JSA:"+JSON.stringify(row));
+              actualizaCliente(row);
+            }
+          }
+        );
+      });
+
+
+      /*const response = await fetch(
         "https://app.cotzul.com/Pedidos/getClienteElegido.php?idcliente=" +
           idcliente
       );
 
-      console.log(
-        "https://app.cotzul.com/Pedidos/getClienteElegido.php?idcliente=" +
-          idcliente
-      );
+    
       const jsonResponse = await response.json();
       console.log("OBTENIENDO PEDIDO");
       console.log(jsonResponse?.cliente);
-      actualizaCliente(jsonResponse?.cliente[0]);
+      actualizaCliente(jsonResponse?.cliente[0]);*/
     } catch (error) {
       console.log(error);
     }
@@ -1555,13 +1604,35 @@ export default function EditaPed(props) {
 
   const cargarTransporte = async () => {
     try {
-      const response = await fetch(
+
+      db = SQLite.openDatabase(
+        database_name,
+        database_version,
+        database_displayname,
+        database_size
+      );
+      db.transaction((tx) => {
+        console.log("cargarTransporte");
+        tx.executeSql(
+          "SELECT * FROM transportes  ",
+          [],
+          (tx, results) => {
+            var len = results.rows.length;
+            if(len>0){
+              registrarTransporte(results.rows._array);
+            }
+            
+          }
+        );
+      });
+
+
+      /*const response = await fetch(
         "https://app.cotzul.com/Pedidos/pd_getTransporte.php"
       );
       const jsonResponse = await response.json();
-      //console.log("REGISTRANDO TRANSPORTE");
-      //console.log(jsonResponse?.transporte);
-      registrarTransporte(jsonResponse?.transporte);
+      
+      registrarTransporte(jsonResponse?.transporte);*/
     } catch (error) {
       console.log("un error cachado listar transporte");
       console.log(error);
@@ -2160,14 +2231,14 @@ export default function EditaPed(props) {
             {regplazo == -1 ? (
               <Text style={styles.tittext}>---</Text>
             ) : (
-              // <RNPickerSelect
-              //   style={pickerStyle}
-              //   useNativeAndroidPickerStyle={false}
-              //   onValueChange={(tplazo) => setTPlazo(tplazo)}
-              //   placeholder={{ label: notnomplazo, value: Number(notidplazo) }}
-              //   items={plazo}
-              // />
-              <></>
+               <RNPickerSelect
+                 style={pickerStyle}
+                 useNativeAndroidPickerStyle={false}
+                 onValueChange={(tplazo) => setTPlazo(tplazo)}
+                 placeholder={{ label: notnomplazo, value: Number(notidplazo) }}
+                 items={plazo}
+               />
+              
             )}
           </View>
         </View>
@@ -2183,7 +2254,7 @@ export default function EditaPed(props) {
                 useNativeAndroidPickerStyle={false}
                 style={pickerStyle}
                 onValueChange={(ttrans) => setTtrans(ttrans)}
-                placeholder={{ label: nomtrans, value: idtrans }}
+                placeholder={{ label: nomtrans, value: Number(idtrans) }}
                 items={transp}
               />
             )}

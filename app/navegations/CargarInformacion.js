@@ -305,7 +305,7 @@ export default function CargarInformacion() {
       //const jsonResponseAPIFecha = await responseFechaAPI.json();
 
       const jsonResponseAPIFecha = {
-        fecha: [{ fechaUltimaActualizacion: "23-02-2023 22:50:44" }],
+        fecha: [{ fechaUltimaActualizacion: "27-02-2023 22:50:44" }],
       };
  
       jsonResponseAPIFecha?.fecha.map((value, index) => {
@@ -612,7 +612,7 @@ export default function CargarInformacion() {
           "(ct_codigo INTEGER, ct_cedula VARCHAR(20), ct_tipoid VARCHAR(20)" +
           ", ct_cliente VARCHAR(200) , ct_telefono  VARCHAR(50), ct_direccion VARCHAR(200)  " +
           ", ct_correo VARCHAR(200) , ct_cupoasignado  VARCHAR(50), ct_cupodisponible VARCHAR(50)  " +
-          ", ct_idplazo VARCHAR(10) , ct_plazo  VARCHAR(50), ct_tcodigo VARCHAR(50)  " +
+          ", ct_idplazo INTEGER , ct_plazo  VARCHAR(50), ct_tcodigo VARCHAR(50)  " +
           ", ct_idvendedor VARCHAR(10) , ct_usuvendedor  VARCHAR(10), ct_ubicacion VARCHAR(10)  " +
           ", ct_ciudad VARCHAR(50)   );"
       );
