@@ -1391,28 +1391,29 @@ export default function EditaPed(props) {
               console.log("OBTENIENDO PEDIDO");
               setPedido(jsonResponse);
               setItemPedido(jsonResponse[0].item);
-              setObs(jsonResponse[0].dp_observacion);
-
-              setIdCliente(jsonResponse[0].dp_codcliente);
+              setObs(jsonResponse[0].pv_observacion);
+              setIdCliente(jsonResponse[0].pv_codcliente);
+              
+              
               console.log("FIN4");
-              setChecked(jsonResponse[0].dp_tipodesc == 0 ? "first" : "second");
+              setChecked(jsonResponse[0].pv_tipodesc == 0 ? "first" : "second");
               console.log("FIN5");
-              setPorcent(jsonResponse[0].dp_porcdesc);
+              setPorcent(jsonResponse[0].pv_porcdesc);
               console.log("FIN6");
-              console.log("TTRANS:"+Number(jsonResponse[0].dp_ttrans));
+              console.log("TTRANS:"+Number(jsonResponse[0].pv_ttrans));
               console.log("FIN62");
-              //setIdTrans(jsonResponse[0].dp_ttrans);
+              //setIdTrans(jsonResponse[0].pv_ttrans);
               console.log("FIN7");
-              setSubtotal(Number(jsonResponse[0].dp_subtotal));
+              setSubtotal(Number(jsonResponse[0].pv_subtotal));
               console.log("FIN8");
-              setDescuento(Number(jsonResponse[0].dp_descuento));
-              setSeguro(Number(jsonResponse[0].dp_seguro));
-              setIva(Number(jsonResponse[0].dp_iva));
-              setTransporte(Number(jsonResponse[0].dp_transporte));
-              setTotal(Number(jsonResponse[0].dp_total));
-              setGnGastos(Number(jsonResponse[0].dp_gngastos));
+              setDescuento(Number(jsonResponse[0].pv_descuento));
+              setSeguro(Number(jsonResponse[0].pv_seguro));
+              setIva(Number(jsonResponse[0].pv_iva));
+              setTransporte(Number(jsonResponse[0].pv_transporte));
+              setTotal(Number(jsonResponse[0].pv_total));
+              setGnGastos(Number(jsonResponse[0].pv_gngastos));
               console.log("FIN");
-              cargarFormaPago(jsonResponse[0].dp_tipodoc);
+              cargarFormaPago(jsonResponse[0].pv_tipodoc);
 
               //console.log("JSA ITEMS:"+jsonResponse[0].item);
               cargarListaItems(JSON.parse(jsonResponse[0].item));
