@@ -286,7 +286,7 @@ export default function EditaPed(props) {
               </Text>
             )}
           </View> */}
-          <View
+          {/* <View
             style={{
               width: 70,
               height: 30,
@@ -300,7 +300,7 @@ export default function EditaPed(props) {
                 itemtotal.length > 0 ? itemtotal[index].subtotal : "0"
               ).toFixed(2)}
             </Text>
-          </View>
+          </View> */}
 
 
 
@@ -1375,10 +1375,9 @@ export default function EditaPed(props) {
       db.transaction((tx) => {
         console.log("PEDIDO:" + idpedido);
         tx.executeSql(
-          "SELECT * FROM pedidosvendedor where dp_codigo = ? ",
-          ["" + idpedido],
+          "SELECT * FROM pedidosvendedor where pv_codigo = ? ",
+          [ idpedido],
           (tx, results) => {
-            console.log("LENGTH 10");
             var len = results ? results.rows.length : 0;
             for (let i = 0; i < len; i++) {
               let row = results.rows.item(i);
@@ -1391,11 +1390,8 @@ export default function EditaPed(props) {
 
               console.log("OBTENIENDO PEDIDO");
               setPedido(jsonResponse);
-             
               setItemPedido(jsonResponse[0].item);
-              
               setObs(jsonResponse[0].dp_observacion);
-              
 
               setIdCliente(jsonResponse[0].dp_codcliente);
               console.log("FIN4");
@@ -1405,7 +1401,7 @@ export default function EditaPed(props) {
               console.log("FIN6");
               console.log("TTRANS:"+Number(jsonResponse[0].dp_ttrans));
               console.log("FIN62");
-              setIdTrans(jsonResponse[0].dp_ttrans);
+              //setIdTrans(jsonResponse[0].dp_ttrans);
               console.log("FIN7");
               setSubtotal(Number(jsonResponse[0].dp_subtotal));
               console.log("FIN8");
@@ -1641,12 +1637,33 @@ export default function EditaPed(props) {
 
   const cargarVendedores = async () => {
     try {
-      const response = await fetch(
+      db = SQLite.openDatabase(
+        database_name,
+        database_version,
+        database_displayname,
+        database_size
+      );
+      db.transaction((tx) => {
+        console.log("cargarVendedores");
+        tx.executeSql(
+          "SELECT * FROM vendedores  ",
+          [],
+          (tx, results) => {
+            var len = results.rows.length;
+            if(len>0){
+              registrarVendedores(results.rows._array);
+            }
+            
+          }
+        );
+      });
+
+      /*const response = await fetch(
         "https://app.cotzul.com/Pedidos/getVendedoresList.php"
       );
       const jsonResponse = await response.json();
-      //console.log(jsonResponse?.vendedores);
-      registrarVendedores(jsonResponse?.vendedores);
+      console.log(jsonResponse?.vendedores);
+      registrarVendedores(jsonResponse?.vendedores);*/
     } catch (error) {
       console.log("un error cachado listar vendedores");
       console.log(error);
