@@ -1375,7 +1375,7 @@ export default function EditaPed(props) {
       db.transaction((tx) => {
         console.log("PEDIDO:" + idpedido);
         tx.executeSql(
-          "SELECT * FROM datospedidos where dp_codigo = ? ",
+          "SELECT * FROM pedidosvendedor where dp_codigo = ? ",
           ["" + idpedido],
           (tx, results) => {
             console.log("LENGTH 10");

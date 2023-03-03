@@ -17,20 +17,20 @@ import { AuthContext } from "../components/Context";
 import moment from "moment";
 import { Button } from "react-native-elements";
 
-const APIfechaUltimaActualizacion =
-  "https://app.cotzul.com/Pedidos/getPedidosVendedor.php?idvendedor=59037";
-const APIpedidosvendedor =
-  "https://app.cotzul.com/Pedidos/getPedidosVendedor.php?idvendedor=59037";
-const APItransportes = "https://app.cotzul.com/Pedidos/pd_getTransporte.php";
-const APIVendedores = "https://app.cotzul.com/Pedidos/getVendedoresList.php";
-const APIClientes =
-  "https://app.cotzul.com/Pedidos/getClientes.php?nombre=marc&idvendedor=59037";
-const APITarifas =
-  "https://app.cotzul.com/Pedidos/pd_getTarifa.php?ttcodigo=1&tarifa=1";
-const APIPlazo = "https://app.cotzul.com/Pedidos/pd_getPlazo.php?notidplazo=1";
-const APIItem = "https://app.cotzul.com/Pedidos/getItems.php?nombre=A";
-const APIDatosPedidos =
-  "https://app.cotzul.com/Pedidos/getDatosPedido.php?idpedido=59";
+
+const STORAGE_KEY = "@save_data";
+
+const APIfechaUltimaActualizacion ="https://app.cotzul.com/Pedidos/getPedidosVendedor.php?idvendedor=59037";
+//const APIpedidosvendedor ="https://app.cotzul.com/Pedidos/getPedidosVendedor.php"; //no se usa
+
+const APIpedidosvendedor = "https://app.cotzul.com/APIVENDEDORES/app_getPedidosVendedor.php";
+const APItransportes = "https://app.cotzul.com/APIVENDEDORES/app_getTransporte.php";
+const APIVendedores = "https://app.cotzul.com/APIVENDEDORES/app_getVendedoresList.php"; //pendiente
+const APIClientes = "https://app.cotzul.com/APIVENDEDORES/app_getClientes.php";
+const APITarifas = "https://app.cotzul.com/APIVENDEDORES/app_getTarifa.php";
+const APIPlazo = "https://app.cotzul.com/APIVENDEDORES/app_getPlazo.php";
+const APIItem = "https://app.cotzul.com/APIVENDEDORES/app_getItems.php";
+
 
 const database_name = "CotzulBD.db";
 const database_version = "1.0";
@@ -62,6 +62,11 @@ export default function CargarInformacion() {
   const [terminaItem, setTerminaItem] = useState(false);
   const [terminaDatosPedido, setTerminaDatosPedido] = useState(false);
 
+
+  const [usuario, setUsuario] = useState(false);
+  const [dataUser, setdataUser] = useState(defaultValueUser());
+
+
   const fechaActual = {
     parametros: [
       {
@@ -70,6 +75,34 @@ export default function CargarInformacion() {
       },
     ],
   };
+
+  function defaultValueUser() {
+    return {
+      vn_codigo: "",
+      vn_usuario: "",
+      vn_nombre: "",
+    };
+  }
+
+  const getDataUser = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem(STORAGE_KEY);
+      setdataUser(JSON.parse(jsonValue));
+      setUsuario(true);
+      console.log("USUARIO"+dataUser.vn_codigo);
+    } catch (e) {
+      // console.log(e)
+    }
+  };
+
+  if (dataUser) {
+    if (!usuario) {
+      getDataUser();
+    }
+  }
+
+  
+
 
   let db = null;
 
@@ -87,8 +120,8 @@ export default function CargarInformacion() {
       terminaCliente &&
       terminaPlazo &&
       terminaTarifa &&
-      terminaItem &&
-      terminaDatosPedido
+      terminaItem 
+      
     ) {
       setTerminaHandle(true);
       terminarProceso();
@@ -101,7 +134,6 @@ export default function CargarInformacion() {
     terminaPlazo,
     terminaTarifa,
     terminaItem,
-    terminaDatosPedido,
   ]);
 
   useEffect(() => {
@@ -113,12 +145,8 @@ export default function CargarInformacion() {
     }
 
     if (actParametros == 1) {
-      if (actualizaFecha) {
         tblparametros(2, fechaActual);
-        //setActualizaTablas(true);
-        //actualizarTablas(1);
         actualizarTablas();
-      }
     }
   }, [actParametros]);
 
@@ -137,17 +165,10 @@ export default function CargarInformacion() {
   useEffect(() => {
     console.log("validaciones:"+fechaUltimaActualizacion);
     if (actValidacionFechas == 1) {
-      if (fechaUltimaActualizacionAPI == "") {
-        console.log("ERROR AL CONECTARSE AL WS");
-      } else if (fechaUltimaActualizacion >= fechaUltimaActualizacionAPI) {
-        console.log("NO ACTUALIZA");
-      } else if (
-        fechaUltimaActualizacion == "" ||
-        fechaUltimaActualizacion < fechaUltimaActualizacionAPI
-      ) {
+        
         setActualizaTablas(true);
         console.log("ACTUALIZA DATOS");
-      }
+    
       setActParametros(1);
     }
   }, [actValidacionFechas]);
@@ -194,7 +215,7 @@ export default function CargarInformacion() {
 
   /** PARAMETROS**/
 
-  const obtenerFechaActualizacionVisualizer = async () => {
+  const obtenerFechaActualizacionVisualizer = () => {
     db = SQLite.openDatabase(
       database_name,
       database_version,
@@ -238,7 +259,7 @@ export default function CargarInformacion() {
 
     var cont = 0;
     db.transaction((txn) => {
-      txn.executeSql("DROP TABLE IF EXISTS parametros");
+      //txn.executeSql("DROP TABLE IF EXISTS parametros");
       txn.executeSql(
         "CREATE TABLE IF NOT EXISTS parametros(pa_codigo VARCHAR(20) , pa_valor VARCHAR(50));"
       );
@@ -257,12 +278,6 @@ export default function CargarInformacion() {
       });
     });
 
-    if (nextStatus === 1) {
-      setActfechaSQL(1);
-    } else if (nextStatus === 2) {
-      setActfechaAPI(1);
-    }
-    console.log("PARAMETROS registros afectados:", cont);
   };
 
   const obtenerFechaActualizacion = async () => {
@@ -292,7 +307,7 @@ export default function CargarInformacion() {
           } else {
             console.log("No se encontró registro de actualización");
           }
-          obtenerFechaActualizacionAPI();
+          setActParametros(1);
         }
       );
     });
@@ -323,20 +338,10 @@ export default function CargarInformacion() {
     setActValidacionFechas(1);
     console.log("validaciones:"+fechaUltimaActualizacion);
     if (actValidacionFechas == 1) {
-      if (fechaUltimaActualizacionAPI === "") {
-        setActualizaFecha(false);
-        console.log("ERROR AL CONECTARSE AL WS");
-      } else if (fechaUltimaActualizacion >= fechaUltimaActualizacionAPI) {
-        setActualizaFecha(true);
-        console.log("NO ACTUALIZA");
-      } else if (
-        fechaUltimaActualizacion == "" ||
-        fechaUltimaActualizacion < fechaUltimaActualizacionAPI
-      ) {
-        //setActualizaTablas(true); //Aquí actualiza los datos de las tablas
+
         setActualizaFecha(true);
         console.log("ACTUALIZA DATOS");
-      }
+      
       setActParametros(1);
     }
   };
@@ -346,22 +351,22 @@ export default function CargarInformacion() {
   /** TABLAS **/
   async function actualizarTablas() {
     const results = await Promise.allSettled([
-      pedidosVendedor(),
+      pedidosvendedor(),
       transportes(),
       vendedores(),
       clientes(),
       plazo(),
       tarifas(),
       items(),
-      datospedidos(),
     ]);
   }
   /** FIN TABLAS **/
 
   /** PEDIDOS VENDEDOR **/
+  /*
   const pedidosVendedor = async () => {
-    console.log("GET API pedidovendedor");
-    const response = await fetch(APIpedidosvendedor);
+    console.log("GET API pedidovendedor:" + fechaUltimaActualizacion + "usuarioId:" + dataUser.vn_codigo);
+    const response = await fetch(APIpedidosvendedor+"?idvendedor="+dataUser.vn_codigo+"&fecha="+fechaUltimaActualizacion);
     const jsonResponse = await response.json();
 
     savePedidosVendedor(jsonResponse);
@@ -440,12 +445,13 @@ export default function CargarInformacion() {
       });
     });
   };
+  */
   /** FIN PEDIDOS VENDEDOR **/
 
   /** TRANSPORTES **/
   const transportes = async () => {
-    console.log("GET API transportes");
-    const response = await fetch(APItransportes);
+    console.log("GET API transportes: "+ fechaUltimaActualizacion);
+    const response = await fetch(APItransportes+"?fecha="+fechaUltimaActualizacion);
     const jsonResponse = await response.json();
 
     saveTransportes(jsonResponse);
@@ -463,34 +469,53 @@ export default function CargarInformacion() {
 
     var cont = 0;
     db.transaction((txn) => {
-      txn.executeSql("DROP TABLE IF EXISTS transportes");
+      //txn.executeSql("DROP TABLE IF EXISTS transportes");
       txn.executeSql(
         "CREATE TABLE IF NOT EXISTS " +
           "transportes " +
           "(pl_codigo INTEGER, pl_razon VARCHAR(200)," +
-          "pl_nombre VARCHAR(200), pl_visible VARCHAR(10));"
+          "pl_nombre VARCHAR(200), pl_visible VARCHAR(10) );"
       );
-
       myResponse?.transporte.map((value, index) => {
-        txn.executeSql(
-          "INSERT INTO transportes(pl_codigo,pl_razon,pl_nombre,pl_visible) " +
-            " VALUES (?, ?, ?, ?); ",
-          [
-            Number(value.pl_codigo),
-            value.pl_razon,
-            value.pl_nombre,
-            value.pl_visible,
-          ],
-          (txn, results) => {
-            if (results.rowsAffected > 0) {
-              cont++;
+        if(value.pl_create_edit == '1'){
+          txn.executeSql(
+            "INSERT INTO transportes(pl_codigo,pl_razon,pl_nombre,pl_visible) " +
+              " VALUES (?, ?, ?, ?); ",
+            [
+              Number(value.pl_codigo),
+              value.pl_razon,
+              value.pl_nombre,
+              value.pl_visible,
+            ],
+            (txn, results) => {
+              if (results.rowsAffected > 0) {
+                cont++;
+              }
+              console.log("TRANSPORTE insertados:"+results.rowsAffected);
             }
-          }
-        );
+          );
+
+        }else if(value.pl_create_edit == '2'){
+          txn.executeSql(
+            "UPDATE transportes set pl_razon = ?, pl_nombre = ?, pl_visible = ? " +
+              " where pl_codigo = ? ",
+            [
+              value.pl_razon,
+              value.pl_nombre,
+              value.pl_visible,
+              Number(value.pl_codigo)
+            ],
+            (txn, results) => {
+              if (results.rowsAffected > 0) {
+                cont++;
+              }
+            }
+          );
+
+        }
       });
     });
-    //console.log("pedidosclientes afectados: ", results.rowsAffected);
-
+    
     listarTransportes();
     //actualizarTablas(3);
     //}
@@ -520,8 +545,8 @@ export default function CargarInformacion() {
 
   /** VENDEDORES **/
   const vendedores = async () => {
-    console.log("GET API vendedores");
-    const response = await fetch(APIVendedores);
+    console.log("GET API vendedores"+fechaUltimaActualizacion);
+    const response = await fetch(APIVendedores+"?fecha="+fechaUltimaActualizacion);
     const jsonResponse = await response.json();
 
     saveVendedores(jsonResponse);
@@ -539,23 +564,35 @@ export default function CargarInformacion() {
 
     var cont = 0;
     db.transaction((txn) => {
-      txn.executeSql("DROP TABLE IF EXISTS vendedores");
+      //txn.executeSql("DROP TABLE IF EXISTS vendedores");
       txn.executeSql(
         "CREATE TABLE IF NOT EXISTS " +
           "vendedores " +
           "(vd_codigo INTEGER, vd_vendedor VARCHAR(200));"
       );
-
       myResponse?.vendedores.map((value, index) => {
-        txn.executeSql(
-          "INSERT INTO vendedores(vd_codigo,vd_vendedor) " + " VALUES (?, ?); ",
-          [Number(value.vd_codigo), value.vd_vendedor],
-          (txn, results) => {
-            if (results.rowsAffected > 0) {
-              cont++;
+        if(value.vd_create_edit == '1'){
+          txn.executeSql(
+            "INSERT INTO vendedores(vd_codigo,vd_vendedor) " + " VALUES (?, ?); ",
+            [Number(value.vd_codigo), value.vd_vendedor],
+            (txn, results) => {
+              if (results.rowsAffected > 0) {
+                cont++;
+              }
             }
-          }
-        );
+          );
+        }else if(value.vd_create_edit == '2'){
+          txn.executeSql(
+            "UPDATE vendedores SET vd_vendedor=? WHERE vd_codigo= ? " + " VALUES (?, ?); ",
+            [ value.vd_vendedor,Number(value.vd_codigo)],
+            (txn, results) => {
+              if (results.rowsAffected > 0) {
+                cont++;
+              }
+            }
+          );
+        }
+        
       });
     });
 
@@ -586,8 +623,8 @@ export default function CargarInformacion() {
 
   /** CLIENTES **/
   const clientes = async () => {
-    console.log("GET API clientes");
-    const response = await fetch(APIClientes);
+    console.log("GET API clientes",fechaUltimaActualizacion,"-",dataUser.vn_codigo );
+    const response = await fetch(APIClientes+"?fecha="+fechaUltimaActualizacion+"&idvendedor="+dataUser.vn_codigo);
     const jsonResponse = await response.json();
 
     saveClientes(jsonResponse);
@@ -605,7 +642,7 @@ export default function CargarInformacion() {
 
     var cont = 0;
     db.transaction((txn) => {
-      txn.executeSql("DROP TABLE IF EXISTS clientes");
+      //txn.executeSql("DROP TABLE IF EXISTS clientes");
       txn.executeSql(
         "CREATE TABLE IF NOT EXISTS " +
           "clientes " +
@@ -616,40 +653,75 @@ export default function CargarInformacion() {
           ", ct_idvendedor VARCHAR(10) , ct_usuvendedor  VARCHAR(10), ct_ubicacion VARCHAR(10)  " +
           ", ct_ciudad VARCHAR(50)   );"
       );
-
       myResponse?.clientes.map((value, index) => {
-        txn.executeSql(
-          "INSERT INTO clientes(ct_codigo,ct_cedula,ct_tipoid" +
-            ", ct_cliente  , ct_telefono , ct_direccion   " +
-            ", ct_correo  , ct_cupoasignado , ct_cupodisponible   " +
-            ", ct_idplazo  , ct_plazo , ct_tcodigo   " +
-            ", ct_idvendedor  , ct_usuvendedor , ct_ubicacion   " +
-            ", ct_ciudad) " +
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?); ",
-          [
-            Number(value.ct_codigo),
-            value.ct_cedula,
-            value.ct_tipoid,
-            value.ct_cliente,
-            value.ct_telefono,
-            value.ct_direccion,
-            value.ct_correo,
-            value.ct_cupoasignado,
-            value.ct_cupodisponible,
-            value.ct_idplazo,
-            value.ct_plazo,
-            value.ct_tcodigo,
-            value.ct_idvendedor,
-            value.ct_usuvendedor,
-            value.ct_ubicacion,
-            value.ct_ciudad,
-          ],
-          (txn, results) => {
-            if (results.rowsAffected > 0) {
-              cont++;
+        if(value.ct_create_edit == '1'){
+          txn.executeSql(
+            "INSERT INTO clientes(ct_codigo,ct_cedula,ct_tipoid" +
+              ", ct_cliente  , ct_telefono , ct_direccion   " +
+              ", ct_correo  , ct_cupoasignado , ct_cupodisponible   " +
+              ", ct_idplazo  , ct_plazo , ct_tcodigo   " +
+              ", ct_idvendedor  , ct_usuvendedor , ct_ubicacion   " +
+              ", ct_ciudad) " +
+              " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?); ",
+            [
+              Number(value.ct_codigo),
+              value.ct_cedula,
+              value.ct_tipoid,
+              value.ct_cliente,
+              value.ct_telefono,
+              value.ct_direccion,
+              value.ct_correo,
+              value.ct_cupoasignado,
+              value.ct_cupodisponible,
+              value.ct_idplazo,
+              value.ct_plazo,
+              value.ct_tcodigo,
+              value.ct_idvendedor,
+              value.ct_usuvendedor,
+              value.ct_ubicacion,
+              value.ct_ciudad,
+            ],
+            (txn, results) => {
+              if (results.rowsAffected > 0) {
+                cont++;
+              }
             }
-          }
-        );
+          );
+        }else if(value.ct_create_edit == '2'){
+          txn.executeSql(
+            "UPDATE clientes SET ct_cedula  = ?, ct_tipoid = ?" +
+              ", ct_cliente = ?  , ct_telefono = ? , ct_direccion = ?   " +
+              ", ct_correo = ?  , ct_cupoasignado = ? , ct_cupodisponible = ?   " +
+              ", ct_idplazo = ?  , ct_plazo = ? , ct_tcodigo = ?   " +
+              ", ct_idvendedor = ?  , ct_usuvendedor = ? , ct_ubicacion = ?   " +
+              ", ct_ciudad = ? " +
+              " WHERE ct_codigo = ?; ",
+            [
+              value.ct_cedula,
+              value.ct_tipoid,
+              value.ct_cliente,
+              value.ct_telefono,
+              value.ct_direccion,
+              value.ct_correo,
+              value.ct_cupoasignado,
+              value.ct_cupodisponible,
+              value.ct_idplazo,
+              value.ct_plazo,
+              value.ct_tcodigo,
+              value.ct_idvendedor,
+              value.ct_usuvendedor,
+              value.ct_ubicacion,
+              value.ct_ciudad,
+              Number(value.ct_codigo),
+            ],
+            (txn, results) => {
+              if (results.rowsAffected > 0) {
+                cont++;
+              }
+            }
+          );
+        }
+
       });
     });
 
@@ -680,8 +752,8 @@ export default function CargarInformacion() {
 
   /** PLAZO **/
   const plazo = async () => {
-    console.log("GET API Plazo");
-    const response = await fetch(APIPlazo);
+    console.log("GET API Plazo"+fechaUltimaActualizacion);
+    const response = await fetch(APIPlazo+"?fecha="+fechaUltimaActualizacion);
     const jsonResponse = await response.json();
 
     savePlazos(jsonResponse);
@@ -699,7 +771,7 @@ export default function CargarInformacion() {
 
     var cont = 0;
     db.transaction((txn) => {
-      txn.executeSql("DROP TABLE IF EXISTS plazos");
+      //txn.executeSql("DROP TABLE IF EXISTS plazos");
       txn.executeSql(
         "CREATE TABLE IF NOT EXISTS " +
           "plazos " +
@@ -708,17 +780,32 @@ export default function CargarInformacion() {
       );
 
       myResponse?.plazo.map((value, index) => {
-        txn.executeSql(
-          "INSERT INTO plazos(pl_codigo,pl_descripcion" +
-            ", pl_notaidplazo) " +
-            " VALUES (?, ?, ?); ",
-          [Number(value.pl_codigo), value.pl_descripcion, "1"],
-          (txn, results) => {
-            if (results.rowsAffected > 0) {
-              cont++;
+        if(value.pl_create_edit == '1'){
+          txn.executeSql(
+            "INSERT INTO plazos(pl_codigo,pl_descripcion" +
+              ", pl_notaidplazo) " +
+              " VALUES (?, ?, ?); ",
+            [Number(value.pl_codigo), value.pl_descripcion, "1"],
+            (txn, results) => {
+              if (results.rowsAffected > 0) {
+                cont++;
+              }
             }
-          }
-        );
+          );
+        }else if(value.pl_create_edit == '2'){
+          txn.executeSql(
+            "UPDATE plazos SET pl_descripcion = ?" +
+              ", pl_notaidplazo = ?" +
+              " WHERE pl_codigo = ?; ",
+            [ value.pl_descripcion, "1",Number(value.pl_codigo)],
+            (txn, results) => {
+              if (results.rowsAffected > 0) {
+                cont++;
+              }
+            }
+          );
+        }
+        
       });
     });
 
@@ -749,8 +836,8 @@ export default function CargarInformacion() {
 
   /** TARIFA **/
   const tarifas = async () => {
-    console.log("GET API Tarifa");
-    const response = await fetch(APITarifas);
+    console.log("GET API Tarifa "+fechaUltimaActualizacion);
+    const response = await fetch(APITarifas+"?fecha="+fechaUltimaActualizacion);
     const jsonResponse = await response.json();
 
     saveTarifas(jsonResponse);
@@ -768,33 +855,56 @@ export default function CargarInformacion() {
 
     var cont = 0;
     db.transaction((txn) => {
-      txn.executeSql("DROP TABLE IF EXISTS tarifas");
+      //txn.executeSql("DROP TABLE IF EXISTS tarifas");
       txn.executeSql(
         "CREATE TABLE IF NOT EXISTS " +
           "tarifas " +
-          "(pl_peso VARCHAR(10), pl_tarifa1 VARCHAR(20), pl_tarifa2 VARCHAR(20)" +
-          ", pl_descripcion VARCHAR(100), ttcodigo INTEGER, tarifa INTEGER  );"
+          "( pl_valtarifa VARCHAR(10), pl_valtransporte VARCHAR(10),   pl_peso VARCHAR(10), pl_tarifa1 VARCHAR(20), pl_tarifa2 VARCHAR(20)" +
+          ", pl_descripcion VARCHAR(100) );"
       );
 
       myResponse?.tarifa.map((value, index) => {
-        txn.executeSql(
-          "INSERT INTO tarifas(pl_peso,pl_tarifa1,pl_tarifa2" +
-            ", pl_descripcion,ttcodigo,tarifa) " +
-            " VALUES (?, ?, ?, ?, ?, ?); ",
-          [
-            value.pl_peso,
-            value.pl_tarifa1,
-            value.pl_tarifa2,
-            value.pl_descripcion,
-            1,
-            1,
-          ],
-          (txn, results) => {
-            if (results.rowsAffected > 0) {
-              cont++;
+        if(value.pl_create_edit == '1'){
+          txn.executeSql(
+            "INSERT INTO tarifas(pl_valtarifa, pl_valtransporte, pl_peso,pl_tarifa1,pl_tarifa2" +
+              ", pl_descripcion) " +
+              " VALUES (?, ?, ?, ?, ?, ?); ",
+            [
+              value.pl_valtarifa,
+              value.pl_valtransporte,
+              value.pl_peso,
+              value.pl_tarifa1,
+              value.pl_tarifa2,
+              value.pl_descripcion,
+            ],
+            (txn, results) => {
+              if (results.rowsAffected > 0) {
+                cont++;
+              }
             }
-          }
-        );
+          );
+        }else if(value.pl_create_edit == '2'){
+          txn.executeSql(
+            "UPDATE tarifas SET pl_peso = ?, pl_tarifa1 = ?, pl_tarifa2 = ?" +
+              ", pl_descripcion = ? " +
+              " WHERE pl_valtarifa = ? AND pl_valtransporte = ? ; ",
+            [
+              value.pl_peso,
+              value.pl_tarifa1,
+              value.pl_tarifa2,
+              value.pl_descripcion,
+              value.pl_valtarifa,
+              value.pl_valtransporte,
+            ],
+            (txn, results) => {
+              if (results.rowsAffected > 0) {
+                cont++;
+              }
+            }
+          );
+        }
+
+        
       });
     });
 
@@ -825,8 +935,8 @@ export default function CargarInformacion() {
 
   /** ITEM **/
   const items = async () => {
-    console.log("GET API Items");
-    const response = await fetch(APIItem);
+    console.log("GET API Items "+fechaUltimaActualizacion);
+    const response = await fetch(APIItem+"?fecha="+fechaUltimaActualizacion);
     const jsonResponse = await response.json();
 
     saveItems(jsonResponse);
@@ -844,7 +954,7 @@ export default function CargarInformacion() {
 
     var cont = 0;
     db.transaction((txn) => {
-      txn.executeSql("DROP TABLE IF EXISTS items");
+      //txn.executeSql("DROP TABLE IF EXISTS items");
       txn.executeSql(
         "CREATE TABLE IF NOT EXISTS " +
           "items " +
@@ -857,35 +967,72 @@ export default function CargarInformacion() {
       );
 
       myResponse?.items.map((value, index) => {
-        txn.executeSql(
-          "INSERT INTO items(it_codigo , it_codprod , it_referencia " +
-            ", it_descripcion , it_precio , it_pvp " +
-            ", it_preciosub , it_contado , it_stock  " +
-            ", it_marca , it_familia , it_costoprom  " +
-            ", it_peso,it_sku) " +
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?); ",
-          [
-            Number(value.it_codigo),
-            value.it_codprod,
-            value.it_referencia,
-            value.it_descripcion,
-            value.it_precio,
-            value.it_pvp,
-            value.it_preciosub,
-            value.it_contado,
-            value.it_stock,
-            value.it_marca,
-            value.it_familia,
-            value.it_costoprom,
-            value.it_peso,
-            value.it_sku,
-          ],
-          (txn, results) => {
-            if (results.rowsAffected > 0) {
-              cont++;
+
+        if(value.it_create_edit == '1'){
+          txn.executeSql(
+            "INSERT INTO items(it_codigo , it_codprod , it_referencia " +
+              ", it_descripcion , it_precio , it_pvp " +
+              ", it_preciosub , it_contado , it_stock  " +
+              ", it_marca , it_familia , it_costoprom  " +
+              ", it_peso,it_sku) " +
+              " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?); ",
+            [
+              Number(value.it_codigo),
+              value.it_codprod,
+              value.it_referencia,
+              value.it_descripcion,
+              value.it_precio,
+              value.it_pvp,
+              value.it_preciosub,
+              value.it_contado,
+              value.it_stock,
+              value.it_marca,
+              value.it_familia,
+              value.it_costoprom,
+              value.it_peso,
+              value.it_sku,
+            ],
+            (txn, results) => {
+              if (results.rowsAffected > 0) {
+                cont++;
+              }
             }
-          }
-        );
+          );
+
+        }else if(value.it_create_edit == '2'){
+          txn.executeSql(
+            "UPDATE items SET  it_codprod = ?, it_referencia = ? " +
+              ", it_descripcion = ? , it_precio = ? , it_pvp = ? " +
+              ", it_preciosub = ? , it_contado = ? , it_stock = ?  " +
+              ", it_marca = ? , it_familia = ? , it_costoprom = ?  " +
+              ", it_peso = ?, it_sku = ? " +
+              " WHERE it_codigo = ? ; ",
+            [
+              value.it_codprod,
+              value.it_referencia,
+              value.it_descripcion,
+              value.it_precio,
+              value.it_pvp,
+              value.it_preciosub,
+              value.it_contado,
+              value.it_stock,
+              value.it_marca,
+              value.it_familia,
+              value.it_costoprom,
+              value.it_peso,
+              value.it_sku,
+              Number(value.it_codigo),
+            ],
+            (txn, results) => {
+              if (results.rowsAffected > 0) {
+                cont++;
+              }
+            }
+          );
+
+        }
+
+        
       });
     });
 
@@ -915,17 +1062,17 @@ export default function CargarInformacion() {
   /** FIN ITEM **/
 
   /** DATOS PEDIDOS **/
-  const datospedidos = async () => {
-    console.log("GET API datospedidos");
-    const response = await fetch(APIDatosPedidos);
+  const pedidosvendedor = async () => {
+    console.log("GET API pedidosvendedor");
+    const response = await fetch(APIpedidosvendedor+"?fecha="+fechaUltimaActualizacion+"&idvendedor="+dataUser.vn_codigo);
     const jsonResponse = await response.json();
 
-    saveDatosPedidos(jsonResponse);
+    savePedidosVendedor(jsonResponse);
     //console.log(JSON.stringify(jsonResponse));
   };
 
-  saveDatosPedidos = (myResponse) => {
-    console.log("GUARDA REGISTROS datospedidos");
+  savePedidosVendedor = (myResponse) => {
+    console.log("GUARDA REGISTROS pedidosVendedor");
 
     db = SQLite.openDatabase(
       database_name,
@@ -936,95 +1083,171 @@ export default function CargarInformacion() {
 
     var cont = 0;
     db.transaction((txn) => {
-      txn.executeSql("DROP TABLE IF EXISTS datospedidos");
+      //txn.executeSql("DROP TABLE IF EXISTS pedidosvendedor");
       txn.executeSql(
         "CREATE TABLE IF NOT EXISTS " +
-          "datospedidos " +
-          "(dp_codigo VARCHAR(200), dp_codvendedor VARCHAR(20), dp_codcliente VARCHAR(50)" +
-          ", dp_subtotal VARCHAR(200), dp_descuento VARCHAR(20), dp_transporte VARCHAR(20) " +
-          ", dp_seguro VARCHAR(20), dp_iva VARCHAR(20), dp_total VARCHAR(20) " +
-          ", dp_estatus VARCHAR(50), dp_codpedven VARCHAR(50), dp_numpedido VARCHAR(20) " +
-          ", dp_idvendedor VARCHAR(50), dp_fecha VARCHAR(50), dp_empresa VARCHAR(20) " +
-          ", dp_prioridad VARCHAR(50), dp_observacion VARCHAR(50), dp_idcliente VARCHAR(20) " +
-          ", dp_tipodoc VARCHAR(50), dp_tipodesc VARCHAR(50), dp_porcdesc VARCHAR(50), dp_valordesc VARCHAR(20) " +
-          ", dp_ttrans VARCHAR(50), dp_gnorden VARCHAR(50), dp_gnventas VARCHAR(20) " +
-          ", dp_gngastos VARCHAR(50), item VARCHAR(500) " +
+          "pedidosvendedor " +
+          "(pv_codigo VARCHAR(200), pv_codvendedor VARCHAR(20), pv_codcliente VARCHAR(50)" +
+          ", pv_subtotal VARCHAR(20), pv_descuento VARCHAR(20), pv_transporte VARCHAR(20) " +
+          ", pv_iva VARCHAR(20), pv_total VARCHAR(20), pv_estatus VARCHAR(10) " +
+
+          ", pv_cliente VARCHAR(200), pv_vendedor VARCHAR(200), pv_codpedven VARCHAR(20) " +
+          ", pv_numpedido VARCHAR(50), pv_idvendedor VARCHAR(10), pv_fecha VARCHAR(20) " +
+          ", pv_empresa VARCHAR(50), pv_prioridad VARCHAR(50), pv_observacion VARCHAR(20) " +
+
+          ", pv_idcliente VARCHAR(10), pv_tipodoc VARCHAR(50), pv_porcdesc VARCHAR(50) " +
+          ", pv_tipodesc VARCHAR(50), pv_valordesc VARCHAR(50), pv_ttrans VARCHAR(20) " +
+          ", pv_gnorden VARCHAR(50), pv_gnventas VARCHAR(50), pv_gngastos VARCHAR(20) " +
+
+          ", item VARCHAR(1000) " +
           " );"
       );
  
-      myResponse?.pedido.map((value, index) => {
-        txn.executeSql(
-          "INSERT INTO datospedidos(dp_codigo , dp_codvendedor , dp_codcliente " +
-            ", dp_subtotal , dp_descuento , dp_transporte  " +
-            ", dp_seguro , dp_iva , dp_total  " +
-            ", dp_estatus , dp_codpedven , dp_numpedido  " +
-            ", dp_idvendedor , dp_fecha , dp_empresa  " +
-            ", dp_prioridad , dp_observacion , dp_idcliente  " +
-            ", dp_tipodoc , dp_tipodesc ,dp_porcdesc  " +
-            ", dp_valordesc , dp_ttrans , dp_gnorden   " +
-            ", dp_gnventas, dp_gngastos, item "+
-            ") " +
-            " VALUES (?, ?, ? " +
-            ", ?, ? , ? " +
-            ", ?, ? , ? " +
-            ", ?, ? , ? " +
-            ", ?, ? , ? " +
-            ", ?, ? , ? " +
-            ", ?, ? , ? " +
-            ", ?, ? , ? " +
-            ", ?, ? , ? " +
-            "); ",
-          [
-            value.dp_codigo,
-            value.dp_codvendedor,
-            value.dp_codcliente,
-
-            value.dp_subtotal,
-            value.dp_descuento,
-            value.dp_transporte,
-
-            value.dp_seguro,
-            value.dp_iva,
-            value.dp_total,
-
-            value.dp_estatus,
-            value.dp_codpedven,
-            value.dp_numpedido,
-
-            value.dp_idvendedor,
-            value.dp_fecha,
-            value.dp_empresa,
-
-            value.dp_prioridad,
-            value.dp_observacion,
-            value.dp_idcliente,
-            
-            value.dp_tipodoc,
-            value.dp_tipodesc,
-            value.dp_porcdesc,
-            
-            value.dp_valordesc,
-            value.dp_ttrans,
-            value.dp_gnorden,
-            
-            value.dp_gnventas,
-            value.dp_gngastos,
-            JSON.stringify(value.item),
-          ],
-          (txn, results) => {
-            if (results.rowsAffected > 0) {
-              cont++;
+      myResponse?.pedidovendedor.map((value, index) => {
+        if(value.pv_create_edit == '1'){
+          txn.executeSql(
+            "INSERT INTO pedidosvendedor(pv_codigo , pv_codvendedor , pv_codcliente " +
+              ", pv_subtotal , pv_descuento , pv_transporte  " +
+              ", pv_iva , pv_total , pv_estatus  " +
+  
+              ", pv_cliente , pv_vendedor , pv_codpedven  " +
+              ", pv_numpedido , pv_idvendedor , pv_fecha  " +
+              ", pv_empresa , pv_prioridad , pv_observacion  " +
+  
+              ", pv_idcliente , pv_tipodoc ,pv_porcdesc  " +
+              ", pv_tipodesc , pv_valordesc , pv_ttrans   " +
+              ", pv_gnorden, pv_gnventas, pv_gngastos" +
+  
+              ", pv_create_edit, item "+
+              ") " +
+              " VALUES (?, ?, ? " +
+              ", ?, ? , ? " +
+              ", ?, ? , ? " +
+              ", ?, ? , ? " +
+              ", ?, ? , ? " +
+              ", ?, ? , ? " +
+              ", ?, ? , ? " +
+              ", ?, ? , ? " +
+              ", ?, ? , ? " +
+              ", ? " +
+              "); ",
+            [
+              value.pv_codigo,
+              value.pv_codvendedor,
+              value.pv_codcliente,
+  
+              value.pv_subtotal,
+              value.pv_descuento,
+              value.pv_transporte,
+  
+              value.pv_iva,
+              value.pv_total,
+              value.pv_estatus,
+  
+              value.pv_cliente,
+              value.pv_vendedor,
+              value.pv_codpedven,
+  
+              value.pv_numpedido,
+              value.pv_idvendedor,
+              value.pv_fecha,
+  
+              value.pv_empresa,
+              value.pv_prioridad,
+              value.pv_observacion,
+              
+              value.pv_idcliente,
+              value.pv_tipodoc,
+              value.pv_porcdesc,
+              
+              value.pv_tipodesc,
+              value.pv_valordesc,
+              value.pv_ttrans,
+              
+              value.pv_gnorden,
+              value.pv_gnventas,
+              value.pv_gngastos,
+  
+              JSON.stringify(value.item),
+            ],
+            (txn, results) => {
+              if (results.rowsAffected > 0) {
+                cont++;
+              }
             }
-          }
-        );
+          );
+        }else if(value.pv_create_edit == '2'){
+          txn.executeSql(
+            "UPDATE pedidosvendedor SET pv_codvendedor = ? , pv_codcliente = ? " +
+              ", pv_subtotal = ? , pv_descuento = ? , pv_transporte = ?  " +
+              ", pv_iva = ? , pv_total = ? , pv_estatus = ?  " +
+  
+              ", pv_cliente = ? , pv_vendedor = ? , pv_codpedven = ?  " +
+              ", pv_numpedido = ? , pv_idvendedor = ? , pv_fecha = ?  " +
+              ", pv_empresa = ? , pv_prioridad = ? , pv_observacion = ?  " +
+  
+              ", pv_idcliente = ? , pv_tipodoc = ? ,pv_porcdesc = ?  " +
+              ", pv_tipodesc = ? , pv_valordesc = ? , pv_ttrans = ?   " +
+              ", pv_gnorden = ?, pv_gnventas = ?, pv_gngastos = ?" +
+  
+              ", item = ?"+
+              " WHERE pv_codigo = ? ",
+            [
+              value.pv_codvendedor,
+              value.pv_codcliente,
+  
+              value.pv_subtotal,
+              value.pv_descuento,
+              value.pv_transporte,
+  
+              value.pv_iva,
+              value.pv_total,
+              value.pv_estatus,
+  
+              value.pv_cliente,
+              value.pv_vendedor,
+              value.pv_codpedven,
+  
+              value.pv_numpedido,
+              value.pv_idvendedor,
+              value.pv_fecha,
+  
+              value.pv_empresa,
+              value.pv_prioridad,
+              value.pv_observacion,
+              
+              value.pv_idcliente,
+              value.pv_tipodoc,
+              value.pv_porcdesc,
+              
+              value.pv_tipodesc,
+              value.pv_valordesc,
+              value.pv_ttrans,
+              
+              value.pv_gnorden,
+              value.pv_gnventas,
+              value.pv_gngastos,
+  
+              JSON.stringify(value.item),
+              
+              value.pv_codigo,
+            ],
+            (txn, results) => {
+              if (results.rowsAffected > 0) {
+                cont++;
+              }
+            }
+          );
+        }
+        
       });
     });
 
-    listarDatosPedidos();
+    listarPedidosVendedor();
   };
 
-  const listarDatosPedidos = () => {
-    console.log("LISTAR datospedidos");
+  const listarPedidosVendedor = () => {
+    console.log("LISTAR pedidosVendedor");
     db = SQLite.openDatabase(
       database_name,
       database_version,
@@ -1032,13 +1255,13 @@ export default function CargarInformacion() {
       database_size
     );
     db.transaction((tx) => {
-      tx.executeSql("SELECT * FROM datospedidos", [], (tx, results) => {
+      tx.executeSql("SELECT * FROM pedidosvendedor", [], (tx, results) => {
         var len = results.rows.length;
         for (let i = 0; i < len; i++) {
           let row = results.rows.item(i);
           //console.log(`DATOS PEDIDOS: ` + JSON.stringify(row));
         }
-        setTerminaDatosPedido(true);
+        setTerminaPedidosVendedor(true);
         terminarProceso();
       });
     });
