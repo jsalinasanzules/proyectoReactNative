@@ -22,6 +22,7 @@ import { RadioButton } from "react-native-paper";
 import { Button } from "react-native-elements";
 import { FlatList } from "react-native-gesture-handler";
 import * as SQLite from "expo-sqlite";
+import moment from 'moment';
 
 /**
  * @author Pedro Durán A.
@@ -261,7 +262,7 @@ export default function EditaPed(props) {
             />
           </View>
 
-          {/* <View
+           <View
             style={{
               width: 70,
               height: 30,
@@ -285,7 +286,7 @@ export default function EditaPed(props) {
                 ).toFixed(2)}
               </Text>
             )}
-          </View> */}
+          </View> 
           {/* <View
             style={{
               width: 70,
@@ -477,13 +478,15 @@ export default function EditaPed(props) {
   };
 
   const actualizaItem = (newitem) => {
+    //console.log("actualizaItem:"+JSON.stringify(newitem));
+    //console.log("actualizaItemNES:"+noElementoSimilar(newitem.it_codprod));
     if (noElementoSimilar(newitem.it_codprod)) {
       resindex = 0;
-      console.log("dataitem. " + JSON.stringify(dataitem));
+      //console.log("dataitem. " + JSON.stringify(dataitem));
       console.log("newitem. " + JSON.stringify(newitem));
       dataitem.push(newitem);
       //setDataItem(dataitem.concat(newitem));
-      console.log("dataitem. " + JSON.stringify(dataitem));
+      //console.log("dataitem. " + JSON.stringify(dataitem));
 
       agregaResultados(
         newitem.it_codprod,
@@ -508,7 +511,7 @@ export default function EditaPed(props) {
 
   const noElementoSimilar = (codigo) => {
     var variable = true;
-    console.log("LENGTH 1");
+    //console.log("LENGTH 1::"+JSON.stringify(itemtotal));
     for (let i = 0; i < itemtotal.length; i++) {
       if (itemtotal[i].codprod == codigo) variable = false;
     }
@@ -536,7 +539,6 @@ export default function EditaPed(props) {
 
   const registrarPlazo = (dataPlazo) => {
     var temp = [];
-    console.log("LENGTH 3"+ JSON.stringify(dataPlazo));
     if (dataPlazo != null) {
       for (let i = 0; i < dataPlazo.length; ++i) {
         temp.push({
@@ -567,15 +569,15 @@ export default function EditaPed(props) {
 
   const registrarTransporte = (dataTransporte) => {
     var temp = [];
-    console.log("LENGTH 5");
     if (dataTransporte != null) {
       for (let i = 0; i < dataTransporte.length; ++i) {
-        if (dataTransporte[i].pl_codigo != idtrans)
+        if (dataTransporte[i].pl_codigo != idtrans){
           temp.push({
             label: dataTransporte[i].pl_nombre,
-            value: dataTransporte[i].pl_codigo,
+            value: Number(dataTransporte[i].pl_codigo),
           });
-        else setNomTrans(dataTransporte[i].pl_nombre);
+        }else{
+          setNomTrans(dataTransporte[i].pl_nombre)};
       }
       setTransp(temp);
     }
@@ -596,7 +598,7 @@ export default function EditaPed(props) {
   ) => {
     var temp = [];
     var gngastosv = 0;
-    console.log("LENGTH 6");
+    console.log("LENGTH 6:", codprod,"-",cant );
 
     for (let i = 0; i < itemtotal.length; ++i) {
       gngastosv = Number(itemtotal[i].costo) / Number(itemtotal[i].subtotal);
@@ -665,7 +667,7 @@ export default function EditaPed(props) {
     });
     //console.log("TEMP TOTAL:"+JSON.stringify(temp));
     itemtotal.push(temp[0]);
-    //setItemTotal(temp);
+    setItemTotal(temp);
     console.log("ITEM TOTAL:"+JSON.stringify(itemtotal));
   };
 
@@ -688,7 +690,8 @@ export default function EditaPed(props) {
     itemtext = "";
     var cadenita1 = "";
     var gngastosv = 0;
-    console.log("LENGTH 7");
+    
+    console.log("CargarResultados:"+JSON.stringify(itemtotal));
 
     for (let i = 0; i < itemtotal.length; i++) {
       numcod++;
@@ -760,11 +763,13 @@ export default function EditaPed(props) {
 
     cargarTarifas(tcodigo, ttrans);
 
-    itemtotal.push(temp[0]);
+    if(temp[0] != null){
+      itemtotal.push(temp[0]);
+    }
+    
     //setItemTotal(temp);
-    console.log("ITEM TOTAL2:"+JSON.stringify(itemtotal));
+    //console.log("ITEM TOTAL2:"+JSON.stringify(itemtotal));
 
-    setSubtotal(null);
     setSubtotal(varsubtotal);
     console.log("entro con el valor de transporte: " + ttrans);
     setKilos(totpeso);
@@ -990,7 +995,7 @@ export default function EditaPed(props) {
     }
 
     itemtotal.push(temp[0]);
-    //setItemTotal(temp);
+    setItemTotal(temp);
     console.log("ITEM TOTAL3:"+JSON.stringify(itemtotal));
     setCadenaint(itemtext);
     setCadenita(cadenita1);
@@ -1103,7 +1108,7 @@ export default function EditaPed(props) {
     console.log("EDITAR RESULTADOS");
 
     for (let i = 0; i < itemtotal.length; i++) {
-      console.log("CODPROD:" + codprod);
+      console.log("CODPROD:" + codprod, "cant:",cant,"itemprod:",itemtotal[i].codprod);
       numcod++;
       if (itemtotal[i].codprod == codprod) {
         console.log("IF");
@@ -1244,15 +1249,15 @@ export default function EditaPed(props) {
       console.log("Val del peso: " + valpeso);
     }
 
-    setCadenaint(null);
+    
     setCadenaint(itemtext);
-    setCadenita(null);
+    
     setCadenita(cadenita1);
-    setItemTotal(null);
+    
     setItemTotal(temp);
-    setSubtotal(null);
+    
     setSubtotal(varsubtotal);
-    setKilos(null);
+    
     setKilos(totpeso);
     cargarTarifas(tcodigo, ttrans);
 
@@ -1340,7 +1345,7 @@ export default function EditaPed(props) {
       );
       db.transaction((tx) => {
         console.log("LENGTH 9");
-        tx.executeSql("SELECT * FROM plazos", [], (tx, results) => {
+        tx.executeSql("SELECT * FROM plazos WHERE pl_codigo = ?", [validplazo], (tx, results) => {
           var len = results.rows.length;
           for (let i = 0; i < len; i++) {
             let row = results.rows.item(i);
@@ -1384,34 +1389,31 @@ export default function EditaPed(props) {
             }
             if (len > 0) {
               //registrarPlazo(results.rows._array);
-              console.log("JSA: " + JSON.stringify(results.rows._array));
+              //console.log("JSA: " + JSON.stringify(results.rows._array));
               const jsonResponse = results.rows._array;
-              
-
               console.log("OBTENIENDO PEDIDO");
+              setRecibo( "000" + jsonResponse[0].pv_numpedido);
+              let momentObj = moment(jsonResponse[0].pv_fecha.substring(0,10), 'YYYY-MM-DD');
+              let showDate = moment(momentObj).format('DD-MM-YYYY');
+              setFechaPed(showDate);
               setPedido(jsonResponse);
+
+
               setItemPedido(jsonResponse[0].item);
               setObs(jsonResponse[0].pv_observacion);
               setIdCliente(jsonResponse[0].pv_codcliente);
-              
-              
-              console.log("FIN4");
               setChecked(jsonResponse[0].pv_tipodesc == 0 ? "first" : "second");
-              console.log("FIN5");
               setPorcent(jsonResponse[0].pv_porcdesc);
-              console.log("FIN6");
-              console.log("TTRANS:"+Number(jsonResponse[0].pv_ttrans));
-              console.log("FIN62");
-              //setIdTrans(jsonResponse[0].pv_ttrans);
-              console.log("FIN7");
+              
+              setIdTrans(jsonResponse[0].pv_ttrans);
               setSubtotal(Number(jsonResponse[0].pv_subtotal));
-              console.log("FIN8");
               setDescuento(Number(jsonResponse[0].pv_descuento));
               setSeguro(Number(jsonResponse[0].pv_seguro));
               setIva(Number(jsonResponse[0].pv_iva));
               setTransporte(Number(jsonResponse[0].pv_transporte));
               setTotal(Number(jsonResponse[0].pv_total));
               setGnGastos(Number(jsonResponse[0].pv_gngastos));
+
               console.log("FIN");
               cargarFormaPago(jsonResponse[0].pv_tipodoc);
 
@@ -1430,13 +1432,13 @@ export default function EditaPed(props) {
   };
 
   const cargarListaItems = (itemes) => {
-    console.log("LENGTH 11");
+    
     for (let i = 0; i < itemes.length; i++) {
-      /*console.log("CHARGE ITEM LIST:"+itemes[i].it_codprod+","+
+      console.log("CHARGE ITEM LIST:"+itemes[i].it_codprod+","+
         itemes[i].it_cantidad+","+
         itemes[i].it_descuento+","+
         0+","+
-        itemes[i].it_precio);*/
+        itemes[i].it_precio);
 
       cargarItemElegido(
         itemes[i].it_codprod,
@@ -1458,16 +1460,13 @@ export default function EditaPed(props) {
         database_size
       );
       db.transaction((tx) => {
-        console.log("CLIENTE jjj:"+idcliente);
         tx.executeSql(
           "SELECT * FROM clientes where ct_codigo = ? ",
-          [idcliente],
+          [Number(idcliente)],
           (tx, results) => {
-            console.log("LENGTH 10");
             var len = results ? results.rows.length : 0;
             for (let i = 0; i < len; i++) {
               let row = results.rows.item(i);
-              console.log("CLIENTE JSA:"+JSON.stringify(row));
               actualizaCliente(row);
             }
           }
@@ -1505,47 +1504,20 @@ export default function EditaPed(props) {
         database_size
       );
       db.transaction((tx) => {
-        console.log("item to search:" + codprod);
-        console.log("LENGTH 12");
+        
         tx.executeSql(
-          "SELECT * FROM items where it_codprod = ?  ",
+          "SELECT * FROM items where it_codprod = ? limit 1 ",
           [codprod],
           (tx, results) => {
+            console.log(JSON.stringify(results));
             var len = results.rows.length;
             for (let i = 0; i < len; i++) {
               let row = results.rows.item(i);
-              console.log("OBTENIENDO itemes");
               //console.log(cantidad+"/"+row);
+              
               actualizaItem(row);
-              console.log(
-                "JSA DATA EDITAR:" +
-                  row.it_codprod +
-                  "," +
-                  cantidad +
-                  "," +
-                  descuento +
-                  "," +
-                  row.it_precio +
-                  "," +
-                  row.it_pvp +
-                  "," +
-                  row.it_preciosub +
-                  "," +
-                  row.it_contado +
-                  "," +
-                  Number(preciosel) +
-                  ",editable:" +
-                  Number(editable) +
-                  ",costprom:" +
-                  row.it_costoprom +
-                  "," +
-                  row.it_peso +
-                  "," +
-                  row.it_referencia +
-                  "-" +
-                  row.it_descripcion
-              );
 
+              //RESULTADO JSA
               EditarResultados(
                 row.it_codprod,
                 cantidad,
@@ -1693,6 +1665,7 @@ export default function EditaPed(props) {
   };
 
   const cargarTarifas = async (ttcodigo, idtransporte) => {
+
     try {
       console.log("Entro en tarifas: " + ttcodigo + "- " + ttrans);
       if (
@@ -1713,6 +1686,29 @@ export default function EditaPed(props) {
       }
 
       if (ttcodigo != 0 && ttrans != 0) {
+
+        db = SQLite.openDatabase(
+          database_name,
+          database_version,
+          database_displayname,
+          database_size
+        );
+        db.transaction((tx) => {
+          tx.executeSql("SELECT * FROM tarifas WHERE pl_valtarifa = ? AND pl_valtransporte = ?", [ttcodigo.toString(),ttrans.toString()], (tx, results) => {
+            var len = results.rows.length;
+            for (let i = 0; i < len; i++) {
+              let row = results.rows.item(i);
+            }
+            if(len > 0 ){
+              const jsonResponse = results.rows._array;
+              setVpeso(jsonResponse[0]);
+              setCobertura(jsonResponse[0].pl_descripcion);
+            }
+            
+          });
+        });
+
+/*
         const response = await fetch(
           "https://app.cotzul.com/Pedidos/pd_getTarifa.php?ttcodigo=" +
             ttcodigo +
@@ -1734,6 +1730,8 @@ export default function EditaPed(props) {
         console.log(
           "valor de ubicacion: " + jsonResponse?.tarifa[0].pl_descrip
         );
+
+        */
       }
     } catch (error) {
       console.log("un error cachado listar transporte");
@@ -1746,9 +1744,8 @@ export default function EditaPed(props) {
   }, [idcliente]);
 
   useEffect(() => {
-    console.log("LENGTH 13");
-    //if (itemtotal.length > 0) {
-    //}
+    if (itemtotal.length > 0) {
+    }
 
   }, [itemtotal]);
 
@@ -1767,6 +1764,7 @@ export default function EditaPed(props) {
   }, []);
 
   useEffect(() => {
+    console.log("CARGAR TARIFA:",tcodigo,"-", ttrans);
     cargarTarifas(tcodigo, ttrans);
     CargarResultados();
   }, [ttrans]);
@@ -2274,6 +2272,7 @@ export default function EditaPed(props) {
                 onValueChange={(ttrans) => setTtrans(ttrans)}
                 placeholder={{ label: nomtrans, value: Number(idtrans) }}
                 items={transp}
+                value={ Number(idtrans)}
               />
             )}
           </View>

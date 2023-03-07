@@ -738,6 +738,7 @@ export default function CargarInformacion() {
     );
     db.transaction((tx) => {
       tx.executeSql("SELECT * FROM clientes", [], (tx, results) => {
+        
         var len = results.rows.length;
         for (let i = 0; i < len; i++) {
           let row = results.rows.item(i);
@@ -875,7 +876,7 @@ export default function CargarInformacion() {
               value.pl_peso,
               value.pl_tarifa1,
               value.pl_tarifa2,
-              value.pl_descripcion,
+              value.pl_descrip,
             ],
             (txn, results) => {
               if (results.rowsAffected > 0) {
@@ -892,7 +893,7 @@ export default function CargarInformacion() {
               value.pl_peso,
               value.pl_tarifa1,
               value.pl_tarifa2,
-              value.pl_descripcion,
+              value.pl_descrip,
               value.pl_valtarifa,
               value.pl_valtransporte,
             ],
@@ -958,7 +959,7 @@ export default function CargarInformacion() {
       txn.executeSql(
         "CREATE TABLE IF NOT EXISTS " +
           "items " +
-          "(it_codigo VARCHAR(200), it_codprod VARCHAR(20), it_referencia VARCHAR(50)" +
+          "(it_codigo VARCHAR(200), it_codprod VARCHAR(20), it_referencia VARCHAR(200)" +
           ", it_descripcion VARCHAR(200), it_precio VARCHAR(20), it_pvp VARCHAR(20) " +
           ", it_preciosub VARCHAR(20), it_contado VARCHAR(20), it_stock VARCHAR(20) " +
           ", it_marca VARCHAR(50), it_familia VARCHAR(50), it_costoprom VARCHAR(20) " +
