@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Children } from "react";
 import {
   View,
   Text,
@@ -238,7 +238,9 @@ export default function EditaPed(props) {
                   item.it_referencia + "-" + item.it_descripcion
                 )
               }
-            />
+            > 
+              {itemtotal[index].cantidad}
+            </TextInput>
           </View> 
            <View
             style={{
@@ -282,12 +284,13 @@ export default function EditaPed(props) {
               <Text style={styles.tabletext}>
                 ${" "}
                 {Number(
-                  itemtotal.length > 0 ? itemtotal[index].preciosel : "0"
+                  //itemtotal.length > 0 ? itemtotal[index].preciosel : "0"
+                  itemtotal.length > 0 ? itemtotal[index].editable : "0"
                 ).toFixed(2)}
               </Text>
             )}
           </View> 
-          {/* <View
+           <View
             style={{
               width: 70,
               height: 30,
@@ -301,11 +304,11 @@ export default function EditaPed(props) {
                 itemtotal.length > 0 ? itemtotal[index].subtotal : "0"
               ).toFixed(2)}
             </Text>
-          </View> */}
+          </View> 
 
 
 
-          {/*<View
+          <View
             style={{
               width: 70,
               height: 30,
@@ -313,7 +316,7 @@ export default function EditaPed(props) {
               borderWidth: 1,
             }}
           >
-            {checked == "second" ? (
+            {checked == "first" ? (
               <Text style={styles.tabletext}> --- </Text>
             ) : (
               <TextInput
@@ -337,10 +340,12 @@ export default function EditaPed(props) {
                     item.it_referencia + "-" + item.it_descripcion
                   )
                 }
-              />
+              >
+                 {itemtotal[index].descuento} 
+              </TextInput>
             )}
           </View>
-           <View 
+          <View 
             style={{
               width: 70,
               height: 30,
@@ -385,7 +390,7 @@ export default function EditaPed(props) {
                 iconStyle={styles.iconRight}
               />
             </Text>
-          </View>  */}
+          </View> 
         </View>
       </View>
     );
@@ -601,7 +606,8 @@ export default function EditaPed(props) {
     console.log("LENGTH 6:", codprod,"-",cant );
 
     for (let i = 0; i < itemtotal.length; ++i) {
-      gngastosv = Number(itemtotal[i].costo) / Number(itemtotal[i].subtotal);
+      gngastosv = (Number(itemtotal[i].subtotal)) != 0 ? Number(itemtotal[i].costo) / Number(itemtotal[i].subtotal): 0;
+      itemtotal[i].gngastos = gngastosv;
       temp.push({
         codprod: itemtotal[i].codprod,
         descripcion: itemtotal[i].descripcion,
@@ -648,7 +654,7 @@ export default function EditaPed(props) {
         })
     );
 
-    temp.push({
+    itemtotal.push({
       codprod: codprod,
       descripcion: descripcion,
       cantidad: cant,
@@ -665,10 +671,17 @@ export default function EditaPed(props) {
       peso: peso,
       gngastos: 0,
     });
-    //console.log("TEMP TOTAL:"+JSON.stringify(temp));
-    itemtotal.push(temp[0]);
-    setItemTotal(temp);
-    console.log("ITEM TOTAL:"+JSON.stringify(itemtotal));
+    console.log("TEMP TOTAL:"+JSON.stringify(temp));
+    
+    /*itemtotal.empty();
+    for (let i = 0; i < temp.length; ++i) {
+      itemtotal.push(temp[i]);
+    }
+    */
+
+   
+    //setItemTotal(temp);
+    console.log("ITEM TOTAL NEW:"+JSON.stringify(itemtotal));
   };
 
   const CargarResultados = () => {
@@ -699,6 +712,7 @@ export default function EditaPed(props) {
       varsubtotal = varsubtotal + itemtotal[i].subtotal;
 
       gngastosv = Number(itemtotal[i].costo) / Number(itemtotal[i].subtotal);
+      itemtotal[i].gngastos = gngastosv;
       temp.push({
         codprod: itemtotal[i].codprod,
         descripcion: itemtotal[i].descripcion,
@@ -763,9 +777,9 @@ export default function EditaPed(props) {
 
     cargarTarifas(tcodigo, ttrans);
 
-    if(temp[0] != null){
+    /*if(temp[0] != null){
       itemtotal.push(temp[0]);
-    }
+    }*/
     
     //setItemTotal(temp);
     //console.log("ITEM TOTAL2:"+JSON.stringify(itemtotal));
@@ -1106,20 +1120,31 @@ export default function EditaPed(props) {
     var gngastosv = 0;
 
     console.log("EDITAR RESULTADOS");
+    
 
     for (let i = 0; i < itemtotal.length; i++) {
-      console.log("CODPROD:" + codprod, "cant:",cant,"itemprod:",itemtotal[i].codprod);
       numcod++;
       if (itemtotal[i].codprod == codprod) {
-        console.log("IF");
+        console.log("IF","itemprod:",itemtotal[i].codprod, "cant:",cant, "codprod:", + codprod);
+        console.log("IF", i);
         var ressub = 0,
           restot = 0;
-        ressub = Number(cant) * Number(preciosel);
+        //ressub = Number(cant) * Number(preciosel);
+        console.log("producto:",itemtotal[i].codprod,"cantidad:", cant,"prodselect:", preciosel,"editable:", editable,"costo:",costo );
+        ressub = Number(cant) * Number(editable);
         rescosto = Number(cant) * Number(costo);
         valpeso = Number(cant) * Number(peso);
         gngastosv = rescosto / ressub;
         restot = ressub - (ressub * desc) / 100;
 
+        itemtotal[i].cantidad = cant;
+        itemtotal[i].editable = editable;
+        itemtotal[i].preciosel = preciosel;
+        itemtotal[i].subtotal = ressub;
+        itemtotal[i].descuento = desc;
+        itemtotal[i].total = restot;
+        itemtotal[i].gngastos = gngastosv;
+        
         temp.push({
           codprod: codprod,
           descripcion: descripcion,
@@ -1180,8 +1205,10 @@ export default function EditaPed(props) {
           ";" +
           restot;
       } else {
+        
+        console.log("IF","itemprod:",itemtotal[i].codprod, "cant:",cant, "codprod:", + codprod);
         console.log("ELSE:" + i);
-        console.log(JSON.stringify(itemtotal));
+
         temp.push({
           codprod: itemtotal[i].codprod,
           descripcion: itemtotal[i].descripcion,
@@ -1246,15 +1273,18 @@ export default function EditaPed(props) {
           itemtotal[i].total;
       }
 
-      console.log("Val del peso: " + valpeso);
+      //console.log("Val del peso: " + valpeso);
     }
 
+    console.log("ITEMTOTAL:"+ JSON.stringify(itemtotal));
+
+    //setItemTotal(itemtotal);
     
     setCadenaint(itemtext);
     
     setCadenita(cadenita1);
     
-    setItemTotal(temp);
+    //setItemTotal(temp);
     
     setSubtotal(varsubtotal);
     
@@ -1305,7 +1335,7 @@ export default function EditaPed(props) {
       }
     }
 
-    /*validación de seguro*/
+    //validación de seguro
 
     varseguro = ((varsubtotal - vardesc) * vseguro) / 100;
     setSeguro(varseguro);
