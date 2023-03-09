@@ -457,6 +457,7 @@ export default function EditaPed(props) {
   const [fechaped, setFechaPed] = useState(getCurrentDate());
 
   const actualizaCliente = (item) => {
+    console.log("CLIENTE:", JSON.stringify(item));
     setCliente(item);
     setTcodigo(item.ct_tcodigo);
     cargarTarifas(item.ct_tcodigo, ttrans);
@@ -824,6 +825,7 @@ export default function EditaPed(props) {
 
     /*validación de seguro*/
 
+    console.log("vseguro:", vseguro);
     varseguro = ((varsubtotal - vardesc) * vseguro) / 100;
     setSeguro(varseguro);
 
@@ -1697,7 +1699,7 @@ export default function EditaPed(props) {
   const cargarTarifas = async (ttcodigo, idtransporte) => {
 
     try {
-      console.log("Entro en tarifas: " + ttcodigo + "- " + ttrans);
+      console.log("Entro en tarifas: " + ttcodigo + "- " + ttrans, "ubicacion:", ubicacion);
       if (
         (ubicacion == 1 || ubicacion == 4 || ubicacion == 24) &&
         idtransporte == 6
